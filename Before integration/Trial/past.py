@@ -1,0 +1,13 @@
+from PIL import Image
+im1 = Image.open('picture\konte1.JPG')
+im2 = Image.open('picture\past1.JPG')
+im3 = Image.open('picture\past2.JPG')
+im4 = Image.open('picture\past3.JPG')
+back_im = im1.copy()
+im2 = im2.resize((213, 110))
+im3 = im3.resize((213, 110))
+im4 = im4.resize((213, 110))
+back_im.paste(im2, (163, 90))
+back_im.paste(im3, (163, 205))
+back_im.paste(im4, (163, 320))
+back_im.save('picture\pastend.JPG', quality=95)
