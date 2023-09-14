@@ -165,7 +165,7 @@ video_create_frame = tk.Frame(root, bg="gray")
 button_back2 = tk.Button(video_create_frame, text="メイン画面に戻る", command=back_to_main_menu, **button_style_small)
 button_back2.grid(row=0, column=0, padx=5, pady=5)
 
-button_select_video = tk.Button(video_create_frame, text="ビデオファイルを選択", command=select_videofile, **button_style_large)
+button_select_video = tk.Button(video_create_frame, text="ファイルを選択", command=select_videofile, **button_style_large)
 button_select_video.grid(row=1, column=1, padx=200, pady=50)
 
 # テキストボックスを作成
