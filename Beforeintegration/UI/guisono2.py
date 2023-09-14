@@ -78,6 +78,12 @@ def select_file():
         file_path_text.delete(1.0, tk.END)  # テキストボックスをクリア
         file_path_text.insert(tk.END, file_path)
 
+def select_videofile():
+    file_path = filedialog.askopenfilename(title="ファイルを選択")
+    if file_path:
+        file_path_videotext.delete(1.0, tk.END)  # テキストボックスをクリア
+        file_path_videotext.insert(tk.END, file_path)
+
 def execute_action():
     # テキストボックスからファイルパスを取得して禁忌辞書とすり合わせるプログラムを実行
     # result_data = subprocess.run(["python", ""], capture_output=True, text=True)
@@ -159,15 +165,15 @@ video_create_frame = tk.Frame(root, bg="gray")
 button_back2 = tk.Button(video_create_frame, text="メイン画面に戻る", command=back_to_main_menu, **button_style_small)
 button_back2.grid(row=0, column=0, padx=5, pady=5)
 
-button_select_video = tk.Button(video_create_frame, text="ビデオファイルを選択", **button_style_large)
+button_select_video = tk.Button(video_create_frame, text="ビデオファイルを選択", command=select_videofile, **button_style_large)
 button_select_video.grid(row=1, column=1, padx=200, pady=50)
 
 # テキストボックスを作成
-file_path_text = tk.Text(video_create_frame, height=1, width=40, bg="lightgray")
-file_path_text.grid(row=2, column=1, padx=10, pady=0)
+file_path_videotext = tk.Text(video_create_frame, height=1, width=40, bg="lightgray")
+file_path_videotext.grid(row=2, column=1, padx=10, pady=0)
 
-execute_button = tk.Button(video_create_frame, text="実行", command=exchange_dock_file, **button_style_small)
-execute_button.grid(row=3, column=1, padx=0, pady=0)
+#execute_button = tk.Button(video_create_frame, text="実行", command=exchange_dock_file, **button_style_small)
+#execute_button.grid(row=3, column=1, padx=0, pady=0)
 
 # イベントループを開始
 current_frame = main_menu_frame
