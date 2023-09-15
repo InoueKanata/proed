@@ -3,6 +3,8 @@ from tkinter import filedialog
 from tkinter import ttk
 import subprocess
 import csv
+from PIL import Image
+
 
 # ウィンドウの作成
 root = tk.Tk()
@@ -70,6 +72,7 @@ def back_to_main_menu():
     check_forbidden_frame.grid_remove()
     video_create_frame.grid_remove()
     data_frame.grid_remove()
+    video_data_frame.grid_remove()
     main_menu_frame.grid(row=0, column=0)
 
 def select_file():
@@ -78,18 +81,9 @@ def select_file():
         file_path_text.delete(1.0, tk.END)  # テキストボックスをクリア
         file_path_text.insert(tk.END, file_path)
 
-def select_videofile():
-    file_path = filedialog.askopenfilename(title="ファイルを選択")
-    if file_path:
-        file_path_videotext.delete(1.0, tk.END)  # テキストボックスをクリア
-        file_path_videotext.insert(tk.END, file_path)
-
 def execute_action():
     # テキストボックスからファイルパスを取得して禁忌辞書とすり合わせるプログラムを実行
     # result_data = subprocess.run(["python", ""], capture_output=True, text=True)
-    # data_lines = result_data.stdout.strip().split('\n')
-    # data = [line.split(',') for line in data_lines]  # データをパース
-
     # データを表示するウィンドウを呼び出す
     global current_frame
     current_frame = data_frame
@@ -99,11 +93,27 @@ def execute_action():
     video_create_frame.grid_remove()
     data_frame.grid(row=0, column=0)
 
+def execute_action2():
+    # Wordfile内の文字を読み取り、表として表示する
+    # result_data = subprocess.run(["python", ""], capture_output=True, text=True)
+
+    # データを表示するウィンドウを呼び出す
+    global current_frame
+    current_frame = data_frame
+
+    # 他のフレームを非表示にし、表を表示させる画面を表示
+    check_forbidden_frame.grid_remove()
+    video_create_frame.grid_remove()
+    video_data_frame.grid(row=0, column=0)
+
+
 def regenerate_action():
     # subprocess.run(["python", ""], check=True) #プロット再生成のプログラムを実行
     back_to_main_menu()
 
-# def exchange_dock_file():
+def exportDocx():
+    
+    back_to_main_menu()
 
 
 
@@ -130,8 +140,8 @@ button_select_file.grid(row=1, column=1, padx=200, pady=20)
 file_path_text = tk.Text(check_forbidden_frame, height=1, width=40, bg="lightgray")
 file_path_text.grid(row=2, column=1, padx=10, pady=0)
 
-execute_button = tk.Button(check_forbidden_frame, text="実行", command=execute_action, **button_style_small)
-execute_button.grid(row=3, column=1, padx=0, pady=0)
+execute_button1 = tk.Button(check_forbidden_frame, text="実行", command=execute_action, **button_style_small)
+execute_button1.grid(row=3, column=1, padx=0, pady=0)
 
 # 表を表示(激うまギャグ)フレーム
 data_frame = tk.Frame(root, bg="gray")
@@ -159,21 +169,65 @@ button_back3.grid(row=0, column=0, padx=5, pady=5,sticky="w")
 submit_button = tk.Button(data_frame, text="再生成&ダウンロード",command=regenerate_action,**button_style_small)
 submit_button.grid(row=2, column=0, padx=5, pady=5)
 
-# ビデオコンテ作成画面
+# ビデオコンテファイル選択画面
 video_create_frame = tk.Frame(root, bg="gray")
 
 button_back2 = tk.Button(video_create_frame, text="メイン画面に戻る", command=back_to_main_menu, **button_style_small)
 button_back2.grid(row=0, column=0, padx=5, pady=5)
 
-button_select_video = tk.Button(video_create_frame, text="ファイルを選択", command=select_videofile, **button_style_large)
+button_select_video = tk.Button(video_create_frame, text="WORDファイル選択",command=select_file, **button_style_large)
 button_select_video.grid(row=1, column=1, padx=200, pady=50)
 
 # テキストボックスを作成
-file_path_videotext = tk.Text(video_create_frame, height=1, width=40, bg="lightgray")
-file_path_videotext.grid(row=2, column=1, padx=10, pady=0)
+file_path_text = tk.Text(video_create_frame, height=1, width=40, bg="lightgray")
+file_path_text.grid(row=2, column=1, padx=10, pady=0)
 
-#execute_button = tk.Button(video_create_frame, text="実行", command=exchange_dock_file, **button_style_small)
-#execute_button.grid(row=3, column=1, padx=0, pady=0)
+execute_button2 = tk.Button(video_create_frame, text="実行",command=execute_action2,**button_style_small)
+execute_button2.grid(row=3, column=1, padx=0, pady=0)
+
+#ビデオ・画像生成用の表を表示する画面
+video_data_frame  = tk.Frame(root, bg="gray")
+
+button_back3 = tk.Button(video_data_frame, text="メイン画面に戻る", command=back_to_main_menu, **button_style_small)
+button_back3.grid(row=0, column=0, padx=5, pady=5,sticky="w")
+
+button_back3 = tk.Button(video_data_frame, text="選択生成", **button_style_small)
+button_back3.grid(row=0, column=0, padx=(0,225), pady=5)
+
+button_back3 = tk.Button(video_data_frame, text="全生成",**button_style_small)
+button_back3.grid(row=0, column=0, padx=(225,0), pady=5)
+
+button_back3 = tk.Button(video_data_frame, text="完了",command=exportDocx,**button_style_small)
+button_back3.grid(row=0, column=0, padx=0, pady=0,sticky="e")
+
+#treeView
+
+tree1 = ttk.Treeview(video_data_frame, column=('A','B'), selectmode='browse', height=10)
+
+# 垂直スクロールバー
+vsb = ttk.Scrollbar(video_data_frame, orient="vertical", command=tree1.yview)
+vsb.grid(row=1, column=1, sticky="ns")
+tree1.configure(yscrollcommand=vsb.set)
+tree1.grid(row=1, column=0, padx=0, pady=0, sticky='nsew')
+
+
+tree1.heading('#0', text='Pic directory', anchor='center')
+tree1.heading('#1', text='A', anchor='center')
+tree1.heading('#2', text='B', anchor='center')
+tree1.column('A', anchor='center', width=290)
+tree1.column('B', anchor='center', width=290)
+im = Image.open("9k.png")
+back_im = im.copy()
+back_im = back_im.resize((180, 110))
+back_im.save('9k_resize.png', quality=95)
+img = tk.PhotoImage(file='9k_resize.png')
+tree1.insert('', 'end', text="#0's text", image=img, value=("Something", "Another Thing"))
+tree1.insert('', 'end', text="#0's text", image=img, value=("2Something", "2Another Thing"))
+style = ttk.Style()
+style.configure('Treeview', rowheight=120)
+
+tree.grid_rowconfigure(0, weight=1)
+tree.grid_columnconfigure(0, weight=1)
 
 # イベントループを開始
 current_frame = main_menu_frame
