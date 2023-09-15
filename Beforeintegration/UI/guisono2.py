@@ -31,6 +31,12 @@ button_style_small = {
     "font": ("Arial", 10),
 }
 
+
+
+
+
+
+
 # 表のデータ
 data = [("1", "禁忌1", "概要1", "改善案1"),
         ("2", "禁忌2", "概要2", "改善案2"),
@@ -75,11 +81,17 @@ def back_to_main_menu():
     video_data_frame.grid_remove()
     main_menu_frame.grid(row=0, column=0)
 
-def select_file():
-    file_path = filedialog.askopenfilename(title="ファイルを選択")
+def select_file(path):
+    file_path = filedialog.askopenfilename(title=path)
     if file_path:
-        file_path_text.delete(1.0, tk.END)  # テキストボックスをクリア
-        file_path_text.insert(tk.END, file_path)
+        if path == "ファイルを選択":
+            file_path_text.delete(1.0, tk.END)  # テキストボックスをクリア
+            file_path_text.insert(tk.END, file_path)
+        elif path == "WORDファイル選択":
+            file_path_text1.delete(1.0, tk.END)  # テキストボックスをクリア
+            file_path_text1.insert(tk.END, file_path)
+
+
 
 def execute_action():
     # テキストボックスからファイルパスを取得して禁忌辞書とすり合わせるプログラムを実行
@@ -133,7 +145,7 @@ check_forbidden_frame = tk.Frame(root, bg="gray")
 button_back = tk.Button(check_forbidden_frame, text="メイン画面に戻る", command=back_to_main_menu, **button_style_small)
 button_back.grid(row=0, column=0, padx=5, pady=5)
 
-button_select_file = tk.Button(check_forbidden_frame, text="ファイルを選択", command=select_file, **button_style_large)
+button_select_file = tk.Button(check_forbidden_frame, text="ファイルを選択", command=lambda:select_file("ファイルを選択"), **button_style_large)
 button_select_file.grid(row=1, column=1, padx=200, pady=20)
 
 # テキストボックスを作成
@@ -143,12 +155,16 @@ file_path_text.grid(row=2, column=1, padx=10, pady=0)
 execute_button1 = tk.Button(check_forbidden_frame, text="実行", command=execute_action, **button_style_small)
 execute_button1.grid(row=3, column=1, padx=0, pady=0)
 
+
 # 表を表示(激うまギャグ)フレーム
 data_frame = tk.Frame(root, bg="gray")
 
 # データを表示するためのテーブル（Treeview）を作成
+DataFlame_style1 = ttk.Style()
+DataFlame_style1.configure('CustomStyle1.Treeview')
+
 columns = ("No.", "禁忌", "概要", "改善案")
-tree = ttk.Treeview(data_frame, columns=columns, show="headings")
+tree = ttk.Treeview(data_frame, columns=columns, show="headings",style='CustomStyle1.Treeview')
 
 # テーブルの各列にヘッダーを設定
 for col in columns:
@@ -175,12 +191,12 @@ video_create_frame = tk.Frame(root, bg="gray")
 button_back2 = tk.Button(video_create_frame, text="メイン画面に戻る", command=back_to_main_menu, **button_style_small)
 button_back2.grid(row=0, column=0, padx=5, pady=5)
 
-button_select_video = tk.Button(video_create_frame, text="WORDファイル選択",command=select_file, **button_style_large)
-button_select_video.grid(row=1, column=1, padx=200, pady=50)
+button_select_video = tk.Button(video_create_frame, text="WORDファイル選択",command=lambda:select_file("WORDファイル選択"), **button_style_large)
+button_select_video.grid(row=1, column=1, padx=200, pady=20)
 
 # テキストボックスを作成
-file_path_text = tk.Text(video_create_frame, height=1, width=40, bg="lightgray")
-file_path_text.grid(row=2, column=1, padx=10, pady=0)
+file_path_text1 = tk.Text(video_create_frame, height=1, width=40, bg="lightgray")
+file_path_text1.grid(row=2, column=1, padx=10, pady=0)
 
 execute_button2 = tk.Button(video_create_frame, text="実行",command=execute_action2,**button_style_small)
 execute_button2.grid(row=3, column=1, padx=0, pady=0)
@@ -201,8 +217,9 @@ button_back3 = tk.Button(video_data_frame, text="完了",command=exportDocx,**bu
 button_back3.grid(row=0, column=0, padx=0, pady=0,sticky="e")
 
 #treeView
-
-tree1 = ttk.Treeview(video_data_frame, column=('A','B'), selectmode='browse', height=10)
+DataFlame_style2 = ttk.Style()
+DataFlame_style2.configure('CustomStyle2.Treeview', rowheight=120)
+tree1 = ttk.Treeview(video_data_frame, column=('A','B'), selectmode='browse', height=10,style='CustomStyle2.Treeview')
 
 # 垂直スクロールバー
 vsb = ttk.Scrollbar(video_data_frame, orient="vertical", command=tree1.yview)
@@ -223,8 +240,6 @@ back_im.save('9k_resize.png', quality=95)
 img = tk.PhotoImage(file='9k_resize.png')
 tree1.insert('', 'end', text="#0's text", image=img, value=("Something", "Another Thing"))
 tree1.insert('', 'end', text="#0's text", image=img, value=("2Something", "2Another Thing"))
-style = ttk.Style()
-style.configure('Treeview', rowheight=120)
 
 tree.grid_rowconfigure(0, weight=1)
 tree.grid_columnconfigure(0, weight=1)
