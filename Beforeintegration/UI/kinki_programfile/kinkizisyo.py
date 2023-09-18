@@ -24,7 +24,7 @@ def tokenize_mecab(text):
 #辞書とのすり合わせ。入力はStr array 出力は
 def kinki_dic(text_arr):
     #word2vecモデルのファイルパス読み込み
-    word2vec_model_path = 'enwiki_dbow\model.vec'
+    word2vec_model_path = 'kinki_programfile\\model.vec'
     word2vec_model = KeyedVectors.load_word2vec_format(word2vec_model_path, binary=False)
 
     with open("ekonte.csv",encoding="utf-8") as f:
