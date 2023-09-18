@@ -48,6 +48,7 @@ def kinki_dic(text_arr):
 def main(file_path):
     sentence_array = []
     result = []
+    count = 1
     with open(file_path,"r") as f:
         file_contentes = f.read()
     sentence = file_contentes.split('\n')
@@ -55,7 +56,6 @@ def main(file_path):
         tmp = tokenize_mecab(i)
         sentence_array =  kinki_dic(tmp)
         if sentence_array:
-            count = 1
             result.apnned([count,i,sentence_array[0],sentence_array[1]])#NO.、禁忌(文章)、概要、改善案
             count +=1
     return result
