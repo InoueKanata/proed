@@ -4,7 +4,7 @@ from tkinter import ttk
 import subprocess
 import csv
 from PIL import Image
-
+from kinki_programfile import kinkizisyo
 
 # ウィンドウの作成
 root = tk.Tk()
@@ -32,15 +32,6 @@ button_style_small = {
 }
 
 
-
-
-
-
-
-# 表のデータ
-data = [("1", "禁忌1", "概要1", "改善案1"),
-        ("2", "禁忌2", "概要2", "改善案2"),
-        ("3", "禁忌3", "概要3", "改善案3")]
 
 # メインメニュー画面を表示する関数
 def show_main_menu():
@@ -92,14 +83,17 @@ def select_file(path):
             file_path_text1.insert(tk.END, file_path)
 
 
-
+# 表のデータ
+data = []
 def execute_action():
     # テキストボックスからファイルパスを取得して禁忌辞書とすり合わせるプログラムを実行
-    # result_data = subprocess.run(["python", ""], capture_output=True, text=True)
+    global data
+    data = kinkizisyo.main(file_path_text.get("1.0",tk.END))
+    # 表にデータを挿入する
+
     # データを表示するウィンドウを呼び出す
     global current_frame
     current_frame = data_frame
-
     # 他のフレームを非表示にし、表を表示させる画面を表示
     check_forbidden_frame.grid_remove()
     video_create_frame.grid_remove()
