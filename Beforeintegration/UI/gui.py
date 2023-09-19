@@ -4,7 +4,41 @@ from tkinter import ttk
 import subprocess
 import csv
 from PIL import Image
+import torch
+from torch import autocast
+from diffusers import StableDiffusionPipeline
+import docx
+import os
 
+#画像生成プログラム
+def create_background(prompt,numP):
+    hugging_token = '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'
+
+    ldm = StableDiffusionPipeline.from_pretrained("CompVis/stable-diffusion-v1-4",revision="fp16",torch_dtype=torch.float16,use_auth_token=hugging_token).to("cuda")
+
+    with autocast("cuda"):
+        image = ldm(prompt,
+                    negative_prompt="sketches, painting, (character, person, human, people, hands, girl, man, :1.3), user name",
+                    height=360,
+                    width=640,
+                    guidance_scale=7.5,  # プロンプトの重み（生成画像の類似度（0〜20)）
+                    num_inference_steps=50,  # 画像生成に費やすステップ数
+                    ).images[0]
+    image.save(r"imagefile\image"+ str(numP) +".png")
+#prompt = "masterpiece, best quality, ((background only:2)), 構図の指定, 物の指定, 背景の指定, 向きの指定"
+#create_background(prompt,numP)→prompt=ポジティブプロンプト,numP何枚目の画像なのか.別画像として保存する際に使用)
+
+
+doc = docx.Document("template.docx")
+#len(doc.tables)表の個数int
+tbl = doc.tables[0]
+word_text = []
+for row in tbl.rows:
+    row_text = []
+    for cell in row.cells:
+        row_text.append(cell.text)
+        l_replace = [s.replace("\u3000","") for s in row_text]
+    word_text.append(l_replace)
 
 # ウィンドウの作成
 root = tk.Tk()
@@ -207,39 +241,60 @@ video_data_frame  = tk.Frame(root, bg="gray")
 button_back3 = tk.Button(video_data_frame, text="メイン画面に戻る", command=back_to_main_menu, **button_style_small)
 button_back3.grid(row=0, column=0, padx=5, pady=5,sticky="w")
 
-button_back3 = tk.Button(video_data_frame, text="選択生成", **button_style_small)
+button_back3 = tk.Button(video_data_frame, text="選択し再生成", **button_style_small)
 button_back3.grid(row=0, column=0, padx=(0,225), pady=5)
-
-button_back3 = tk.Button(video_data_frame, text="全生成",**button_style_small)
-button_back3.grid(row=0, column=0, padx=(225,0), pady=5)
 
 button_back3 = tk.Button(video_data_frame, text="完了",command=exportDocx,**button_style_small)
 button_back3.grid(row=0, column=0, padx=0, pady=0,sticky="e")
 
 #treeView
 DataFlame_style2 = ttk.Style()
-DataFlame_style2.configure('CustomStyle2.Treeview', rowheight=120)
-tree1 = ttk.Treeview(video_data_frame, column=('A','B'), selectmode='browse', height=10,style='CustomStyle2.Treeview')
+DataFlame_style2.configure('CustomStyle2.Treeview', rowheight=140)
+tree1 = ttk.Treeview(video_data_frame, column=('A','B','C','D'), selectmode='browse', height=2,style='CustomStyle2.Treeview')
 
 # 垂直スクロールバー
-vsb = ttk.Scrollbar(video_data_frame, orient="vertical", command=tree1.yview)
-vsb.grid(row=1, column=1, sticky="ns")
+#ysb = tk.Scrollbar(video_data_frame, orient=tk.VERTICAL, width=16, command=tree1.yview)
+#tree.configure(yscrollcommand=ysb.set)
+#ysb.grid(row=1, column=1, sticky='news')
+vsb = ttk.Scrollbar(video_data_frame, orient=tk.VERTICAL, command=tree1.yview)
+#vsb = tk.Scrollbar(video_create_frame, command=text_widget.yview)
+vsb.grid(row=1, column=1, sticky="news")
 tree1.configure(yscrollcommand=vsb.set)
 tree1.grid(row=1, column=0, padx=0, pady=0, sticky='nsew')
 
 
-tree1.heading('#0', text='Pic directory', anchor='center')
-tree1.heading('#1', text='A', anchor='center')
-tree1.heading('#2', text='B', anchor='center')
-tree1.column('A', anchor='center', width=290)
-tree1.column('B', anchor='center', width=290)
-im = Image.open("9k.png")
+tree1.heading('#0', text='画面', anchor='center')
+tree1.heading('#1', text='シーン', anchor='center')
+tree1.heading('#2', text='カット', anchor='center')
+tree1.heading('#3', text='内容', anchor='center')
+tree1.heading('#4', text='秒', anchor='center')
+tree1.column('#0', anchor='center', width=280)
+tree1.column('#1', anchor='center', width=40)
+tree1.column('#2', anchor='center', width=40)
+tree1.column('#3', anchor='center', width=360)
+tree1.column('#4', anchor='center', width=50)
+
+current_directory = os.getcwd()
+folder_path = current_directory+'\imagefile'
+#フォルダが存在しない場合にフォルダを作成
+if not os.path.exists(folder_path):
+    os.makedirs(folder_path)
+
+numP = 1
+scene = 1
+cut = 1
+content = "内容"
+seconds = "0:01"
+
+im = Image.open(folder_path+"\image"+ str(numP) +".png")
 back_im = im.copy()
-back_im = back_im.resize((180, 110))
-back_im.save('9k_resize.png', quality=95)
-img = tk.PhotoImage(file='9k_resize.png')
-tree1.insert('', 'end', text="#0's text", image=img, value=("Something", "Another Thing"))
-tree1.insert('', 'end', text="#0's text", image=img, value=("2Something", "2Another Thing"))
+back_im = back_im.resize((240, 135))
+back_im.save(folder_path+r"\resize"+str(numP)+".png", quality=95)
+img = tk.PhotoImage(file=folder_path+r"\resize"+str(numP)+".png")
+tree1.insert('', 'end', image=img,value=(scene, cut,content, seconds))
+tree1.insert('', 'end', image=img,value=(scene, cut,content, seconds))
+tree1.insert('', 'end', image=img,value=(scene, cut,content, seconds))
+tree1.insert('', 'end', image=img,value=("3", cut,content, seconds))
 
 tree.grid_rowconfigure(0, weight=1)
 tree.grid_columnconfigure(0, weight=1)
