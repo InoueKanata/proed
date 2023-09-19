@@ -27,7 +27,7 @@ def kinki_dic(text_arr):
     word2vec_model_path = 'kinki_programfile\\model.vec'
     word2vec_model = KeyedVectors.load_word2vec_format(word2vec_model_path, binary=False)
 
-    with open("ekonte.csv",encoding="utf-8") as f:
+    with open("kinki_programfile\\kinkizisyo.csv",encoding="utf-8") as f:
         reader = csv.reader(f)
         value = 0.6 #類似度判定用の値
         tmp_array = []
