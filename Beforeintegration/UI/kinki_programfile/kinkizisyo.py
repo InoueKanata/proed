@@ -7,6 +7,9 @@ import MeCab
 from PIL import Image
 import sys
 
+# word2vec_model_path = 'C:\\Users\\tabiu\\Downloads\\proed\\Beforeintegration\\UI\\kinki_programfile\\model.vec'
+word2vec_model_path = 'kinki_programfile\\model.vec'
+word2vec_model = KeyedVectors.load_word2vec_format(word2vec_model_path, binary=False)
 
 #「名詞」「動詞」「形容詞」のみの文章に整形する。入力はString 出力はStr array
 def tokenize_mecab(text):
@@ -24,25 +27,23 @@ def tokenize_mecab(text):
 #辞書とのすり合わせ。入力はStr array 出力は
 def kinki_dic(text_arr):
     #word2vecモデルのファイルパス読み込み
-    word2vec_model_path = 'kinki_programfile\\model.vec'
-    word2vec_model = KeyedVectors.load_word2vec_format(word2vec_model_path, binary=False)
 
-    with open("kinki_programfile\\kinkizisyo.csv",encoding="utf-8") as f:
+    # with open("C:\\Users\\tabiu\\Downloads\\proed\\Beforeintegration\\UI\\kinki_programfile\\kinkzisyo.csv",encoding="utf-8") as f:
+    with open("kinki_programfile\\kinkzisyo.csv",encoding="utf-8") as f:
         reader = csv.reader(f)
         value = 0.6 #類似度判定用の値
         tmp_array = []
         sentence_array = []
         for row in reader:
             for i in text_arr:
-                similarity = word2vec_model.similarity(row[0],i)
-                tmp_array.append(similarity)
-                if sentence_array >= value:
-                    sentence_array.append([row[1],row[2]])#概要、改善案
-        avarage = sum(tmp_array)/len(tmp_array)
-        if avarage >= value:
-            return sentence_array
-        else:
-            pass
+                try:
+                  similarity = word2vec_model.similarity(row[0],i)
+                except KeyError:
+                    pass
+                if similarity >= value:
+                    sentence_array.append([row[0],row[1],row[2]])#概要、改善案
+                    tmp_array.append(i)
+        return sentence_array,tmp_array
 
 #filepathからTxt fileを読み込んでtokenize_mecabとkinki_dicを実行する
 def main(file_path):
@@ -54,9 +55,15 @@ def main(file_path):
     sentence = file_contentes.split('\n')
     for i in sentence:
         tmp = tokenize_mecab(i)
-        sentence_array =  kinki_dic(tmp)
+        sentence_array,tmp_array =  kinki_dic(tmp)
         if sentence_array:
-            result.apnned([count,i,sentence_array[0],sentence_array[1]])#NO.、禁忌(文章)、概要、改善案
+            result.append([count,sentence_array[0][0],sentence_array[0][1],sentence_array[0][2]])#NO.、禁忌(文章)、概要、改善案
             count +=1
-    return result
+    for i in tmp_array:
+        file_contentes = file_contentes.replace(i,"")
+    print(result)
+    return result,file_contentes
+
+# main("C:\\Users\\tabiu\\Downloads\\prompt.txt")
+
 

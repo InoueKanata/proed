@@ -72,6 +72,7 @@ def back_to_main_menu():
     video_create_frame.grid_remove()
     data_frame.grid_remove()
     video_data_frame.grid_remove()
+    nodata_frame.grid_remove()
     main_menu_frame.grid(row=0, column=0)
 
 def select_file(path):
@@ -89,16 +90,27 @@ def select_file(path):
 
 # 表のデータ
 data = []
+prompt_filepath = ""
+# data.append([1,"なし","なし","なし"])
 def execute_action():
     # テキストボックスからファイルパスを取得して禁忌辞書とすり合わせるプログラムを実行
-    # global data
-    # tmp = file_path_text.get("1.0",tk.END).replace("\n","")
-    # data = kinkizisyo.main(tmp)
-    # 表にデータを挿入する
-
-    # データを表示するウィンドウを呼び出す
+    global data
+    global prompt_filepath 
+    prompt_filepath = file_path_text.get("1.0",tk.END).replace("\n","")
+    global removedtext
+    data,removedtext = kinkizisyo.main(prompt_filepath)
+    # データをテーブルに追加
+    for i in data:
+        tree.insert("", "end", values=i)
     global current_frame
-    current_frame = data_frame
+    # 表にデータを挿入する
+    if data:
+        # データを表示するウィンドウを呼び出す
+        current_frame = nodata_frame
+
+    elif not data:
+        # データを表示するウィンドウを呼び出す
+        current_frame = data_frame
     # 他のフレームを非表示にし、表を表示させる画面を表示
     check_forbidden_frame.grid_remove()
     video_create_frame.grid_remove()
@@ -131,12 +143,14 @@ def on_focus_out(event):
 
 
 def regenerate_action():
-    if not bard_api_psid.get("1.0", tk.END)== "\n":
+    global data
+    global removedtext
+    if not bard_api_psid.get("1.0", tk.END)== "bard APIのPSIDを入力\n":
         tmp = bard_api_psid.get("1.0", tk.END).replace("\n","")
         file_path = filedialog.askdirectory(title="ダウンロードファイルを選択")
         if file_path:
             file_path = os.path.join(file_path,"pronpt.txt")
-            response = Bard.main(tmp)
+            response = Bard.main(tmp,removedtext)
             with open(file_path,"w") as file:
                 file.write(response)
             back_to_main_menu()
@@ -177,6 +191,12 @@ execute_button1 = tk.Button(check_forbidden_frame, text="実行", command=execut
 execute_button1.grid(row=3, column=1, padx=0, pady=0)
 
 
+nodata_frame = tk.Frame(root,bg="gray")
+nodata_frame_label = tk.Label(nodata_frame, text="検出された放送禁止用語はありませんでした")
+nodata_frame_label.grid(row=1, column=1, padx=200, pady=20)
+nodata_frame_button = tk.Button(nodata_frame, text="戻る", command=nodata_frame.pack_forget)
+nodata_frame_button.grid(row=2, column=1, padx=10, pady=0)
+
 # 表を表示(激うまギャグ)フレーム
 data_frame = tk.Frame(root, bg="gray")
 
@@ -184,7 +204,7 @@ data_frame = tk.Frame(root, bg="gray")
 DataFlame_style1 = ttk.Style()
 DataFlame_style1.configure('CustomStyle1.Treeview')
 
-columns = ("No.", "禁忌", "概要", "改善案")
+columns = ("No.", "禁忌単語", "概要", "改善案")
 tree = ttk.Treeview(data_frame, columns=columns, show="headings",style='CustomStyle1.Treeview')
 
 # テーブルの各列にヘッダーを設定
@@ -192,9 +212,7 @@ for col in columns:
     tree.heading(col, text=col)
     tree.column(col, width=100)  # 列の幅を調整
 
-# データをテーブルに追加
-for item in data:
-    tree.insert("", "end", values=item)
+
 
 # テーブルをフレームに配置
 tree.pack(side="top", fill="both", expand=True)
@@ -203,8 +221,6 @@ tree.grid(row=1, column=0, padx=200, pady=10)
 button_back3 = tk.Button(data_frame, text="メイン画面に戻る", command=back_to_main_menu, **button_style_small)
 button_back3.grid(row=0, column=0, padx=5, pady=5,sticky="w")
 
-tutolial = tk.Button(data_frame, text="PSIDの取得方法を見る", **button_style_small)
-tutolial.grid(row=0, column=0, padx=5, pady=5,sticky="w")
 
 bard_api_psid = tk.Text(data_frame, height=1, width=40, bg="lightgray",fg="gray")
 bard_api_psid.insert("1.0", "bard APIのPSIDを入力")
