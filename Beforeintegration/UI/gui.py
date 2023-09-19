@@ -78,8 +78,10 @@ def select_file(path):
     file_path = filedialog.askopenfilename(title=path)
     if file_path:
         if path == "ファイルを選択":
+            file_path_text.config(state="normal")
             file_path_text.delete(1.0, tk.END)  # テキストボックスをクリア
             file_path_text.insert(tk.END, file_path)
+            file_path_text.config(state="disabled")
         elif path == "WORDファイル選択":
             file_path_text1.delete(1.0, tk.END)  # テキストボックスをクリア
             file_path_text1.insert(tk.END, file_path)
@@ -138,7 +140,7 @@ def regenerate_action():
             with open(file_path,"w") as file:
                 file.write(response)
             back_to_main_menu()
-            
+   
 
 
 def exportDocx():
@@ -168,6 +170,7 @@ button_select_file.grid(row=1, column=1, padx=200, pady=20)
 
 # テキストボックスを作成
 file_path_text = tk.Text(check_forbidden_frame, height=1, width=40, bg="lightgray")
+file_path_text.config(state="disabled")
 file_path_text.grid(row=2, column=1, padx=10, pady=0)
 
 execute_button1 = tk.Button(check_forbidden_frame, text="実行", command=execute_action, **button_style_small)
@@ -199,6 +202,9 @@ tree.grid(row=1, column=0, padx=200, pady=10)
 
 button_back3 = tk.Button(data_frame, text="メイン画面に戻る", command=back_to_main_menu, **button_style_small)
 button_back3.grid(row=0, column=0, padx=5, pady=5,sticky="w")
+
+tutolial = tk.Button(data_frame, text="PSIDの取得方法を見る", **button_style_small)
+tutolial.grid(row=0, column=0, padx=5, pady=5,sticky="w")
 
 bard_api_psid = tk.Text(data_frame, height=1, width=40, bg="lightgray",fg="gray")
 bard_api_psid.insert("1.0", "bard APIのPSIDを入力")
