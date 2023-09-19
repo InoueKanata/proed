@@ -9,13 +9,12 @@ from torch import autocast
 from diffusers import StableDiffusionPipeline
 import docx
 import os
+from googletrans import Translator
 
 #画像生成プログラム
+hugging_token = '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'
+ldm = StableDiffusionPipeline.from_pretrained("CompVis/stable-diffusion-v1-4",revision="fp16",torch_dtype=torch.float16,use_auth_token=hugging_token).to("cuda")
 def create_background(prompt,numP):
-    hugging_token = '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'
-
-    ldm = StableDiffusionPipeline.from_pretrained("CompVis/stable-diffusion-v1-4",revision="fp16",torch_dtype=torch.float16,use_auth_token=hugging_token).to("cuda")
-
     with autocast("cuda"):
         image = ldm(prompt,
                     negative_prompt="sketches, painting, (character, person, human, people, hands, girl, man, :1.3), user name",
@@ -30,15 +29,19 @@ def create_background(prompt,numP):
 
 
 doc = docx.Document("template.docx")
-#len(doc.tables)表の個数int
-tbl = doc.tables[0]
+tbn=len(doc.tables)
 word_text = []
-for row in tbl.rows:
-    row_text = []
-    for cell in row.cells:
-        row_text.append(cell.text)
-        l_replace = [s.replace("\u3000","") for s in row_text]
-    word_text.append(l_replace)
+for i in range(tbn):
+    tbl = doc.tables[i]
+    tmpW = 0
+    for row in tbl.rows:
+        row_text = []
+        if tmpW == 1:
+            for cell in row.cells:
+                row_text.append(cell.text)
+                l_replace = [s.replace("\u3000","") for s in row_text]
+            word_text.append(l_replace)
+        tmpW = 1
 
 # ウィンドウの作成
 root = tk.Tk()
@@ -64,11 +67,6 @@ button_style_small = {
     "bg": "lightblue",
     "font": ("Arial", 10),
 }
-
-
-
-
-
 
 
 # 表のデータ
@@ -253,11 +251,7 @@ DataFlame_style2.configure('CustomStyle2.Treeview', rowheight=140)
 tree1 = ttk.Treeview(video_data_frame, column=('A','B','C','D'), selectmode='browse', height=2,style='CustomStyle2.Treeview')
 
 # 垂直スクロールバー
-#ysb = tk.Scrollbar(video_data_frame, orient=tk.VERTICAL, width=16, command=tree1.yview)
-#tree.configure(yscrollcommand=ysb.set)
-#ysb.grid(row=1, column=1, sticky='news')
 vsb = ttk.Scrollbar(video_data_frame, orient=tk.VERTICAL, command=tree1.yview)
-#vsb = tk.Scrollbar(video_create_frame, command=text_widget.yview)
 vsb.grid(row=1, column=1, sticky="news")
 tree1.configure(yscrollcommand=vsb.set)
 tree1.grid(row=1, column=0, padx=0, pady=0, sticky='nsew')
@@ -279,26 +273,41 @@ folder_path = current_directory+'\imagefile'
 #フォルダが存在しない場合にフォルダを作成
 if not os.path.exists(folder_path):
     os.makedirs(folder_path)
-
-numP = 1
-scene = 1
-cut = 1
-content = "内容"
-seconds = "0:01"
-
-im = Image.open(folder_path+"\image"+ str(numP) +".png")
-back_im = im.copy()
-back_im = back_im.resize((240, 135))
-back_im.save(folder_path+r"\resize"+str(numP)+".png", quality=95)
-img = tk.PhotoImage(file=folder_path+r"\resize"+str(numP)+".png")
-tree1.insert('', 'end', image=img,value=(scene, cut,content, seconds))
-tree1.insert('', 'end', image=img,value=(scene, cut,content, seconds))
-tree1.insert('', 'end', image=img,value=(scene, cut,content, seconds))
-tree1.insert('', 'end', image=img,value=("3", cut,content, seconds))
+tr = Translator()
+numP = 0
+icons = {}
+for i in range(18*tbn):
+    if i%3 == 0:
+        if word_text[i][5]=="":
+            break
+        scene = word_text[i][0]
+        cut = word_text[i][1]
+        content = word_text[i+2][3]
+        seconds = word_text[i][5]
+        kouzu = word_text[i][3].replace("構図：","")
+        if kouzu!="":
+            kouzu = tr.translate(kouzu, src="ja", dest="en").text
+        mono = word_text[i][4].replace("物：","")
+        if mono!="":
+            mono = tr.translate(mono, src="ja", dest="en").text
+        haikei = word_text[i+1][3].replace("背景：","")
+        if haikei!="":
+            haikei = tr.translate(haikei, src="ja", dest="en").text
+        muki = word_text[i+1][4].replace("向き：","")
+        if muki!="":
+            muki = tr.translate(muki, src="ja", dest="en").text
+        prompt = "masterpiece, best quality, ((background only:2)), "+kouzu+", "+mono+", "+haikei+", "+muki+""
+        #create_background(prompt,numP)
+        #im = Image.open(folder_path+"\image"+ str(numP) +".png")
+        #back_im = im.copy()
+        #back_im = back_im.resize((240, 135))
+        #back_im.save(folder_path+r"\resize"+str(numP)+".png", quality=95)
+        icons["image"+ str(numP)] = tk.PhotoImage(file=folder_path+r"\resize"+ str(numP) +".png")
+        tree1.insert('', 'end', image=icons["image"+ str(numP)],value=(scene, cut,content, seconds))
+        numP = numP + 1
 
 tree.grid_rowconfigure(0, weight=1)
 tree.grid_columnconfigure(0, weight=1)
-
 # イベントループを開始
 current_frame = main_menu_frame
 root.mainloop()
