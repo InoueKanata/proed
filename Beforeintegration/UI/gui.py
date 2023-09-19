@@ -4,7 +4,9 @@ from tkinter import ttk
 import subprocess
 import csv
 from PIL import Image
-
+from kinki_programfile import kinkizisyo
+from kinki_programfile import Bard
+import os
 
 # ウィンドウの作成
 root = tk.Tk()
@@ -32,15 +34,6 @@ button_style_small = {
 }
 
 
-
-
-
-
-
-# 表のデータ
-data = [("1", "禁忌1", "概要1", "改善案1"),
-        ("2", "禁忌2", "概要2", "改善案2"),
-        ("3", "禁忌3", "概要3", "改善案3")]
 
 # メインメニュー画面を表示する関数
 def show_main_menu():
@@ -85,21 +78,27 @@ def select_file(path):
     file_path = filedialog.askopenfilename(title=path)
     if file_path:
         if path == "ファイルを選択":
+            file_path_text.config(state="normal")
             file_path_text.delete(1.0, tk.END)  # テキストボックスをクリア
             file_path_text.insert(tk.END, file_path)
+            file_path_text.config(state="disabled")
         elif path == "WORDファイル選択":
             file_path_text1.delete(1.0, tk.END)  # テキストボックスをクリア
             file_path_text1.insert(tk.END, file_path)
 
 
-
+# 表のデータ
+data = []
 def execute_action():
     # テキストボックスからファイルパスを取得して禁忌辞書とすり合わせるプログラムを実行
-    # result_data = subprocess.run(["python", ""], capture_output=True, text=True)
+    # global data
+    # tmp = file_path_text.get("1.0",tk.END).replace("\n","")
+    # data = kinkizisyo.main(tmp)
+    # 表にデータを挿入する
+
     # データを表示するウィンドウを呼び出す
     global current_frame
     current_frame = data_frame
-
     # 他のフレームを非表示にし、表を表示させる画面を表示
     check_forbidden_frame.grid_remove()
     video_create_frame.grid_remove()
@@ -118,13 +117,34 @@ def execute_action2():
     video_create_frame.grid_remove()
     video_data_frame.grid(row=0, column=0)
 
+def on_entry_click(event):
+    text_widget = event.widget
+    if text_widget.get("1.0", tk.END) == "bard APIのPSIDを入力\n":
+        text_widget.delete("1.0", tk.END)
+        text_widget.config(fg="gray")
+
+def on_focus_out(event):
+    text_widget = event.widget 
+    if text_widget.get("1.0", tk.END) == "\n":
+        text_widget.insert("1.0", "bard APIのPSIDを入力")
+        text_widget.config(fg="gray")  
+
 
 def regenerate_action():
-    # subprocess.run(["python", ""], check=True) #プロット再生成のプログラムを実行
-    back_to_main_menu()
+    if not bard_api_psid.get("1.0", tk.END)== "\n":
+        tmp = bard_api_psid.get("1.0", tk.END).replace("\n","")
+        file_path = filedialog.askdirectory(title="ダウンロードファイルを選択")
+        if file_path:
+            file_path = os.path.join(file_path,"pronpt.txt")
+            response = Bard.main(tmp)
+            with open(file_path,"w") as file:
+                file.write(response)
+            back_to_main_menu()
+   
+
 
 def exportDocx():
-    
+
     back_to_main_menu()
 
 
@@ -145,11 +165,12 @@ check_forbidden_frame = tk.Frame(root, bg="gray")
 button_back = tk.Button(check_forbidden_frame, text="メイン画面に戻る", command=back_to_main_menu, **button_style_small)
 button_back.grid(row=0, column=0, padx=5, pady=5)
 
-button_select_file = tk.Button(check_forbidden_frame, text="ファイルを選択", command=lambda:select_file("ファイルを選択"), **button_style_large)
+button_select_file = tk.Button(check_forbidden_frame, text="テキストファイルを選択", command=lambda:select_file("ファイルを選択"), **button_style_large)
 button_select_file.grid(row=1, column=1, padx=200, pady=20)
 
 # テキストボックスを作成
 file_path_text = tk.Text(check_forbidden_frame, height=1, width=40, bg="lightgray")
+file_path_text.config(state="disabled")
 file_path_text.grid(row=2, column=1, padx=10, pady=0)
 
 execute_button1 = tk.Button(check_forbidden_frame, text="実行", command=execute_action, **button_style_small)
@@ -182,8 +203,17 @@ tree.grid(row=1, column=0, padx=200, pady=10)
 button_back3 = tk.Button(data_frame, text="メイン画面に戻る", command=back_to_main_menu, **button_style_small)
 button_back3.grid(row=0, column=0, padx=5, pady=5,sticky="w")
 
+tutolial = tk.Button(data_frame, text="PSIDの取得方法を見る", **button_style_small)
+tutolial.grid(row=0, column=0, padx=5, pady=5,sticky="w")
+
+bard_api_psid = tk.Text(data_frame, height=1, width=40, bg="lightgray",fg="gray")
+bard_api_psid.insert("1.0", "bard APIのPSIDを入力")
+bard_api_psid.bind("<FocusIn>", on_entry_click)
+bard_api_psid.bind("<FocusOut>", on_focus_out)
+bard_api_psid.grid(row=2, column=0, padx=5, pady=5)
+
 submit_button = tk.Button(data_frame, text="再生成&ダウンロード",command=regenerate_action,**button_style_small)
-submit_button.grid(row=2, column=0, padx=5, pady=5)
+submit_button.grid(row=3, column=0, padx=5, pady=5)
 
 # ビデオコンテファイル選択画面
 video_create_frame = tk.Frame(root, bg="gray")
