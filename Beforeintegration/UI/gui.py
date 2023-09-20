@@ -226,7 +226,7 @@ def movie(secS):
         tmpMV= tmpMV+1
     # スライドショーの動画像を作成する処理
     concat_clip = concatenate_videoclips(clips, method="compose")
-    concat_clip.write_videofile(folder_path+r"\output.mp4", 
+    concat_clip.write_videofile(r"output.mp4", 
                                 fps=24,
                                 write_logfile=True,
                                 )
