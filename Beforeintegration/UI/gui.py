@@ -10,6 +10,8 @@ from diffusers import StableDiffusionPipeline
 import docx
 import os
 from googletrans import Translator
+import glob
+from moviepy.editor import *
 
 #画像生成プログラム
 hugging_token = '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'
@@ -28,20 +30,7 @@ def create_background(prompt,numP):
 #create_background(prompt,numP)→prompt=ポジティブプロンプト,numP何枚目の画像なのか.別画像として保存する際に使用)
 
 
-doc = docx.Document("template.docx")
-tbn=len(doc.tables)
-word_text = []
-for i in range(tbn):
-    tbl = doc.tables[i]
-    tmpW = 0
-    for row in tbl.rows:
-        row_text = []
-        if tmpW == 1:
-            for cell in row.cells:
-                row_text.append(cell.text)
-                l_replace = [s.replace("\u3000","") for s in row_text]
-            word_text.append(l_replace)
-        tmpW = 1
+
 
 # ウィンドウの作成
 root = tk.Tk()
@@ -122,7 +111,8 @@ def select_file(path):
         elif path == "WORDファイル選択":
             file_path_text1.delete(1.0, tk.END)  # テキストボックスをクリア
             file_path_text1.insert(tk.END, file_path)
-
+            global wordpath
+            wordpath = file_path
 
 
 def execute_action():
@@ -143,7 +133,7 @@ def execute_action2():
 
     # データを表示するウィンドウを呼び出す
     global current_frame
-    current_frame = data_frame
+    current_frame = video_data_frame
 
     # 他のフレームを非表示にし、表を表示させる画面を表示
     check_forbidden_frame.grid_remove()
@@ -160,6 +150,86 @@ def exportDocx():
     back_to_main_menu()
 
 
+def Storyboard(wordpath):
+    doc = docx.Document(wordpath)
+    tbn=len(doc.tables)
+    word_text = []
+    for i in range(tbn):
+        tbl = doc.tables[i]
+        tmpW = 0
+        for row in tbl.rows:
+            row_text = []
+            if tmpW == 1:
+                for cell in row.cells:
+                    row_text.append(cell.text)
+                    l_replace = [s.replace("\u3000","") for s in row_text]
+                word_text.append(l_replace)
+            tmpW = 1
+    tr = Translator()
+    
+    numP = 0
+    global icons
+    icons = {}
+    global secS
+    secS=[]
+
+    for i in range(18*tbn):
+        if i%3 == 0:
+            if word_text[i][5]=="":
+                break
+            scene = word_text[i][0]
+            cut = word_text[i][1]
+            content = word_text[i+2][3]
+            seconds = word_text[i][5]
+            secS.append(seconds)
+            kouzu = word_text[i][3].replace("構図：","")
+            if kouzu!="":
+                kouzu = tr.translate(kouzu, src="ja", dest="en").text
+            mono = word_text[i][4].replace("物：","")
+            if mono!="":
+                mono = tr.translate(mono, src="ja", dest="en").text
+            haikei = word_text[i+1][3].replace("背景：","")
+            if haikei!="":
+                haikei = tr.translate(haikei, src="ja", dest="en").text
+            muki = word_text[i+1][4].replace("向き：","")
+            if muki!="":
+                muki = tr.translate(muki, src="ja", dest="en").text
+            prompt = "masterpiece, best quality, ((background only:2)), "+kouzu+", "+mono+", "+haikei+", "+muki+""
+            #create_background(prompt,numP)
+            #im = Image.open(folder_path+"\image"+ str(numP) +".png")
+            #back_im = im.copy()
+            #back_im = back_im.resize((240, 135))
+            #back_im.save(folder_path+r"\resize"+str(numP)+".png", quality=95)
+            icons["image"+ str(numP)] = tk.PhotoImage(file=folder_path+r"\resize"+ str(numP) +".png")
+            tree1.insert('', 'end', image=icons["image"+ str(numP)],value=(scene, cut,content, seconds))
+            numP = numP + 1
+    
+    global current_frame
+    current_frame = video_data_frame
+
+    # 他のフレームを非表示にし、表を表示させる画面を表示
+    check_forbidden_frame.grid_remove()
+    video_create_frame.grid_remove()
+    video_data_frame.grid(row=0, column=0)
+
+def movie(secS):
+    file_list = glob.glob(folder_path+"\image*.png")
+    # ファイル名リストを昇順にソート
+    file_list.sort()
+    # スライドショーを作る元となる静止画情報を格納する処理
+    clips = [] 
+    tmpMV=0
+    for m in file_list:
+        #img = Image.open(m)
+        clip = ImageClip(m).set_duration(secS[tmpMV])
+        clips.append(clip)
+        tmpMV= tmpMV+1
+    # スライドショーの動画像を作成する処理
+    concat_clip = concatenate_videoclips(clips, method="compose")
+    concat_clip.write_videofile(folder_path+r"\output.mp4", 
+                                fps=24,
+                                write_logfile=True,
+                                )
 
 # メインメニューフレーム
 main_menu_frame = tk.Frame(root, bg="gray")
@@ -230,7 +300,7 @@ button_select_video.grid(row=1, column=1, padx=200, pady=20)
 file_path_text1 = tk.Text(video_create_frame, height=1, width=40, bg="lightgray")
 file_path_text1.grid(row=2, column=1, padx=10, pady=0)
 
-execute_button2 = tk.Button(video_create_frame, text="実行",command=execute_action2,**button_style_small)
+execute_button2 = tk.Button(video_create_frame, text="実行",command=lambda:Storyboard(wordpath),**button_style_small)
 execute_button2.grid(row=3, column=1, padx=0, pady=0)
 
 #ビデオ・画像生成用の表を表示する画面
@@ -273,38 +343,6 @@ folder_path = current_directory+'\imagefile'
 #フォルダが存在しない場合にフォルダを作成
 if not os.path.exists(folder_path):
     os.makedirs(folder_path)
-tr = Translator()
-numP = 0
-icons = {}
-for i in range(18*tbn):
-    if i%3 == 0:
-        if word_text[i][5]=="":
-            break
-        scene = word_text[i][0]
-        cut = word_text[i][1]
-        content = word_text[i+2][3]
-        seconds = word_text[i][5]
-        kouzu = word_text[i][3].replace("構図：","")
-        if kouzu!="":
-            kouzu = tr.translate(kouzu, src="ja", dest="en").text
-        mono = word_text[i][4].replace("物：","")
-        if mono!="":
-            mono = tr.translate(mono, src="ja", dest="en").text
-        haikei = word_text[i+1][3].replace("背景：","")
-        if haikei!="":
-            haikei = tr.translate(haikei, src="ja", dest="en").text
-        muki = word_text[i+1][4].replace("向き：","")
-        if muki!="":
-            muki = tr.translate(muki, src="ja", dest="en").text
-        prompt = "masterpiece, best quality, ((background only:2)), "+kouzu+", "+mono+", "+haikei+", "+muki+""
-        #create_background(prompt,numP)
-        #im = Image.open(folder_path+"\image"+ str(numP) +".png")
-        #back_im = im.copy()
-        #back_im = back_im.resize((240, 135))
-        #back_im.save(folder_path+r"\resize"+str(numP)+".png", quality=95)
-        icons["image"+ str(numP)] = tk.PhotoImage(file=folder_path+r"\resize"+ str(numP) +".png")
-        tree1.insert('', 'end', image=icons["image"+ str(numP)],value=(scene, cut,content, seconds))
-        numP = numP + 1
 
 tree.grid_rowconfigure(0, weight=1)
 tree.grid_columnconfigure(0, weight=1)
