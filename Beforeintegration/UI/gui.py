@@ -13,10 +13,12 @@ from docx.shared import Inches
 from kinki_programfile import kinkizisyo
 from kinki_programfile import Bard
 import os
-from googletrans import Translator
+import deepl
 import glob
 from moviepy.editor import *
 
+key=os.environ["DEEPL_AUTH_KEY"]
+translator = deepl.Translator(key)
 #画像生成プログラム
 hugging_token = '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'
 ldm = StableDiffusionPipeline.from_pretrained("CompVis/stable-diffusion-v1-4",revision="fp16",torch_dtype=torch.float16,use_auth_token=hugging_token).to("cuda")
@@ -197,8 +199,6 @@ def Storyboard(wordpath):
                     l_replace = [s.replace("\u3000","") for s in row_text]
                 word_text.append(l_replace)
             tmpW = 1
-    global tr
-    tr = Translator()
     
     numP = 0
     global icons
@@ -218,22 +218,22 @@ def Storyboard(wordpath):
             secS.append(seconds)
             kouzu = word_text[i][3].replace("構図：","")
             if kouzu!="":
-                kouzu = tr.translate(kouzu, src="ja", dest="en").text
+                kouzu = translator.translate_text(kouzu, target_lang="EN-US").text
             mono = word_text[i][4].replace("物：","")
             if mono!="":
-                mono = tr.translate(mono, src="ja", dest="en").text
+                mono = translator.translate_text(mono, target_lang="EN-US").text
             haikei = word_text[i+1][3].replace("背景：","")
             if haikei!="":
-                haikei = tr.translate(haikei, src="ja", dest="en").text
+                haikei = translator.translate_text(haikei, target_lang="EN-US").text
             muki = word_text[i+1][4].replace("向き：","")
             if muki!="":
-                muki = tr.translate(muki, src="ja", dest="en").text
+                muki = translator.translate_text(muki, target_lang="EN-US").text
             prompt = "masterpiece, best quality, ((background only:2)), "+kouzu+", "+mono+", "+haikei+", "+muki+""
-            #create_background(prompt,numP)
-            #im = Image.open(folder_path+"\image"+ str(numP) +".png")
-            #back_im = im.copy()
-            #back_im = back_im.resize((240, 135))
-            #back_im.save(folder_path+r"\resize"+str(numP)+".png", quality=95)
+            create_background(prompt,numP)
+            im = Image.open(folder_path+"\image"+ str(numP) +".png")
+            back_im = im.copy()
+            back_im = back_im.resize((240, 135))
+            back_im.save(folder_path+r"\resize"+str(numP)+".png", quality=95)
             icons["image"+ str(numP)] = tk.PhotoImage(file=folder_path+r"\resize"+ str(numP) +".png")
             tree1.insert('', 'end',image=icons["image"+ str(numP)],value=(scene, cut,content, seconds),tags=(numP))
             numP = numP + 1
@@ -275,16 +275,16 @@ def get_selected_item():
             i=tags*3-2
             kouzu = word_text[i][3].replace("構図：","")
             if kouzu!="":
-                kouzu = tr.translate(kouzu, src="ja", dest="en").text
+                kouzu = translator.translate_text(kouzu, target_lang="EN-US").text
             mono = word_text[i][4].replace("物：","")
             if mono!="":
-                mono = tr.translate(mono, src="ja", dest="en").text
+                mono = translator.translate_text(mono, target_lang="EN-US").text
             haikei = word_text[i+1][3].replace("背景：","")
             if haikei!="":
-                haikei = tr.translate(haikei, src="ja", dest="en").text
+                haikei = translator.translate_text(haikei, target_lang="EN-US").text
             muki = word_text[i+1][4].replace("向き：","")
             if muki!="":
-                muki = tr.translate(muki, src="ja", dest="en").text
+                muki = translator.translate_text(muki, target_lang="EN-US").text
             prompt = "masterpiece, best quality, ((background only:2)), "+kouzu+", "+mono+", "+haikei+", "+muki+""
             create_background(prompt,tags)
             im = Image.open(folder_path+"\image"+ str(tags) +".png")
