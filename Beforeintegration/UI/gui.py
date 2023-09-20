@@ -8,6 +8,8 @@ import torch
 from torch import autocast
 from diffusers import StableDiffusionPipeline
 import docx
+from docx import Document
+from docx.shared import Inches
 import os
 from googletrans import Translator
 import glob
@@ -28,9 +30,6 @@ def create_background(prompt,numP):
     image.save(r"imagefile\image"+ str(numP) +".png")
 #prompt = "masterpiece, best quality, ((background only:2)), 構図の指定, 物の指定, 背景の指定, 向きの指定"
 #create_background(prompt,numP)→prompt=ポジティブプロンプト,numP何枚目の画像なのか.別画像として保存する際に使用)
-
-
-
 
 # ウィンドウの作成
 root = tk.Tk()
@@ -114,7 +113,6 @@ def select_file(path):
             global wordpath
             wordpath = file_path
 
-
 def execute_action():
     # テキストボックスからファイルパスを取得して禁忌辞書とすり合わせるプログラムを実行
     # result_data = subprocess.run(["python", ""], capture_output=True, text=True)
@@ -145,14 +143,11 @@ def regenerate_action():
     # subprocess.run(["python", ""], check=True) #プロット再生成のプログラムを実行
     back_to_main_menu()
 
-def exportDocx():
-    
-    back_to_main_menu()
-
-
 def Storyboard(wordpath):
     doc = docx.Document(wordpath)
+    global tbn
     tbn=len(doc.tables)
+    global word_text
     word_text = []
     for i in range(tbn):
         tbl = doc.tables[i]
@@ -165,6 +160,7 @@ def Storyboard(wordpath):
                     l_replace = [s.replace("\u3000","") for s in row_text]
                 word_text.append(l_replace)
             tmpW = 1
+    global tr
     tr = Translator()
     
     numP = 0
@@ -172,7 +168,8 @@ def Storyboard(wordpath):
     icons = {}
     global secS
     secS=[]
-
+    for i in tree1.get_children():
+        tree1.delete(i)
     for i in range(18*tbn):
         if i%3 == 0:
             if word_text[i][5]=="":
@@ -201,7 +198,7 @@ def Storyboard(wordpath):
             #back_im = back_im.resize((240, 135))
             #back_im.save(folder_path+r"\resize"+str(numP)+".png", quality=95)
             icons["image"+ str(numP)] = tk.PhotoImage(file=folder_path+r"\resize"+ str(numP) +".png")
-            tree1.insert('', 'end', image=icons["image"+ str(numP)],value=(scene, cut,content, seconds))
+            tree1.insert('', 'end',image=icons["image"+ str(numP)],value=(scene, cut,content, seconds),tags=(numP))
             numP = numP + 1
     
     global current_frame
@@ -230,6 +227,74 @@ def movie(secS):
                                 fps=24,
                                 write_logfile=True,
                                 )
+
+def get_selected_item():
+    selected_item = tree1.selection()  #選択した行のIDを取得
+    if selected_item:
+        item = tree1.item(selected_item)
+        tags = item['tags'][0] #選択した行のデータを取得
+        tags = int(tags)
+        if tags!="":
+            i=tags*3-2
+            kouzu = word_text[i][3].replace("構図：","")
+            if kouzu!="":
+                kouzu = tr.translate(kouzu, src="ja", dest="en").text
+            mono = word_text[i][4].replace("物：","")
+            if mono!="":
+                mono = tr.translate(mono, src="ja", dest="en").text
+            haikei = word_text[i+1][3].replace("背景：","")
+            if haikei!="":
+                haikei = tr.translate(haikei, src="ja", dest="en").text
+            muki = word_text[i+1][4].replace("向き：","")
+            if muki!="":
+                muki = tr.translate(muki, src="ja", dest="en").text
+            prompt = "masterpiece, best quality, ((background only:2)), "+kouzu+", "+mono+", "+haikei+", "+muki+""
+            create_background(prompt,tags)
+            im = Image.open(folder_path+"\image"+ str(tags) +".png")
+            back_im = im.copy()
+            back_im = back_im.resize((240, 135))
+            back_im.save(folder_path+r"\resize"+str(tags)+".png", quality=95)
+            
+            numP = 0
+            global icons
+            icons = {}
+            for i in tree1.get_children():
+                tree1.delete(i)
+            for i in range(18*tbn):
+                if i%3 == 0:
+                    if word_text[i][5]=="":
+                        break
+                    scene = word_text[i][0]
+                    cut = word_text[i][1]
+                    content = word_text[i+2][3]
+                    seconds = word_text[i][5]
+                    icons["image"+ str(numP)] = tk.PhotoImage(file=folder_path+r"\resize"+ str(numP) +".png")
+                    tree1.insert('', 'end',image=icons["image"+ str(numP)],value=(scene, cut,content, seconds),tags=(numP))
+                    numP = numP + 1
+            
+def exportDocx():
+    movie(secS)
+    doc = Document(wordpath)
+    file_list = glob.glob(folder_path+r"\resize*.png")
+    # ファイル名リストを昇順にソート
+    file_list.sort()
+    max = len(file_list)
+    tmp = 0
+    for i in range(tbn):
+        table = doc.tables[i]
+        for m in range(6):
+            if tmp<max:
+                row_index = 3*m+1  # 行のインデックス
+                column_index = 2  # 列のインデックス
+                cell = table.cell(row_index, column_index)
+                # 画像を挿入
+                cell.paragraphs[0].clear()  # セル内の既存の内容をクリア
+                run = cell.paragraphs[0].add_run()
+                image_path = file_list[tmp]
+                run.add_picture(image_path, width=Inches(2.6), height=Inches(1.4625))
+                tmp = tmp + 1
+    doc.save(wordpath)
+    back_to_main_menu()
 
 # メインメニューフレーム
 main_menu_frame = tk.Frame(root, bg="gray")
@@ -309,10 +374,10 @@ video_data_frame  = tk.Frame(root, bg="gray")
 button_back3 = tk.Button(video_data_frame, text="メイン画面に戻る", command=back_to_main_menu, **button_style_small)
 button_back3.grid(row=0, column=0, padx=5, pady=5,sticky="w")
 
-button_back3 = tk.Button(video_data_frame, text="選択し再生成", **button_style_small)
+button_back3 = tk.Button(video_data_frame, text="選択し再生成",  command=get_selected_item, **button_style_small)
 button_back3.grid(row=0, column=0, padx=(0,225), pady=5)
 
-button_back3 = tk.Button(video_data_frame, text="完了",command=exportDocx,**button_style_small)
+button_back3 = tk.Button(video_data_frame, text="wordファイルに出力",command=exportDocx,**button_style_small)
 button_back3.grid(row=0, column=0, padx=0, pady=0,sticky="e")
 
 #treeView
