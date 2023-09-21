@@ -26,10 +26,10 @@ def create_background(prompt,numP):
     with autocast("cuda"):
         image = ldm(prompt,
                     negative_prompt="sketches, painting, (character, person, human, people, hands, girl, man, :1.3), user name",
-                    height=360,
-                    width=640,#解像度をあげるとより具体的な画像が出力される?
+                    height= 168,#もとは320*640，8で割れる数のみ受け付け
+                    width=328,#解像度をあげるとより具体的な画像が出力される?
                     guidance_scale=10,  # プロンプトの重み（生成画像の類似度（0〜20)）
-                    num_inference_steps=50,  # 画像生成に費やすステップ数
+                    num_inference_steps=30,  # 画像生成に費やすステップ数,もとは50
                     ).images[0]
     image.save(r"imagefile\image"+ str(numP) +".png")
 #prompt = "masterpiece, best quality, ((background only:2)), 構図の指定, 物の指定, 背景の指定, 向きの指定"
