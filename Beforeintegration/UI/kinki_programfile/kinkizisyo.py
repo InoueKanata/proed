@@ -50,7 +50,7 @@ def main(file_path):
     sentence_array = []
     result = []
     count = 1
-    with open(file_path,"r") as f:
+    with open(file_path,"r",encoding="utf-8") as f:
         file_contentes = f.read()
     sentence = file_contentes.split('\n')
     for i in sentence:
