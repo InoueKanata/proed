@@ -29,7 +29,7 @@ def create_background(prompt,numP):
                     height=180,
                     width=320,
                     guidance_scale=15,  # プロンプトの重み（生成画像の類似度（0〜20)）
-                    num_inference_steps=50,  # 画像生成に費やすステップ数
+                    num_inference_steps=20,  # 画像生成に費やすステップ数
                     ).images[0]
     image.save(r"imagefile\image"+ str(numP) +".png")
 #prompt = "masterpiece, best quality, ((background only:2)), 構図の指定, 物の指定, 背景の指定, 向きの指定"
