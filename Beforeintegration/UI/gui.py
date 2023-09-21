@@ -26,10 +26,10 @@ def create_background(prompt,numP):
     with autocast("cuda"):
         image = ldm(prompt,
                     negative_prompt="sketches, painting, (character, person, human, people, hands, girl, man, :1.3), user name",
-                    height=180,
-                    width=320,
-                    guidance_scale=15,  # プロンプトの重み（生成画像の類似度（0〜20)）
-                    num_inference_steps=20,  # 画像生成に費やすステップ数
+                    height=360,
+                    width=640,#解像度をあげるとより具体的な画像が出力される?
+                    guidance_scale=10,  # プロンプトの重み（生成画像の類似度（0〜20)）
+                    num_inference_steps=50,  # 画像生成に費やすステップ数
                     ).images[0]
     image.save(r"imagefile\image"+ str(numP) +".png")
 #prompt = "masterpiece, best quality, ((background only:2)), 構図の指定, 物の指定, 背景の指定, 向きの指定"
@@ -229,11 +229,11 @@ def Storyboard(wordpath):
             if muki!="":
                 muki = translator.translate_text(muki, target_lang="EN-US").text
             prompt = "masterpiece, best quality, ((background only:2)), "+kouzu+", "+mono+", "+haikei+", "+muki+""
-            create_background(prompt,numP)
-            im = Image.open(folder_path+"\image"+ str(numP) +".png")
-            back_im = im.copy()
-            back_im = back_im.resize((240, 135))
-            back_im.save(folder_path+r"\resize"+str(numP)+".png", quality=95)
+            #create_background(prompt,numP)
+            #im = Image.open(folder_path+"\image"+ str(numP) +".png")
+            #back_im = im.copy()
+            #back_im = back_im.resize((240, 135))
+            #back_im.save(folder_path+r"\resize"+str(numP)+".png", quality=95)
             icons["image"+ str(numP)] = tk.PhotoImage(file=folder_path+r"\resize"+ str(numP) +".png")
             tree1.insert('', 'end',image=icons["image"+ str(numP)],value=(scene, cut,content, seconds),tags=(numP))
             numP = numP + 1
