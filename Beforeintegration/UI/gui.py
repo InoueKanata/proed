@@ -127,6 +127,8 @@ def execute_action():
     global removedtext
     data,removedtext = kinkizisyo.main(prompt_filepath)
     # データをテーブルに追加
+    for i in tree.get_children():
+        tree.delete(i)
     for i in data:
         tree.insert("", "end", values=i)
     global current_frame
