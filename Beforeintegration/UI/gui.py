@@ -229,11 +229,11 @@ def Storyboard(wordpath):
             if muki!="":
                 muki = translator.translate_text(muki, target_lang="EN-US").text
             prompt = "masterpiece, best quality, ((background only:2)), "+kouzu+", "+mono+", "+haikei+", "+muki+""
-            #create_background(prompt,numP)
-            #im = Image.open(folder_path+"\image"+ str(numP) +".png")
-            #back_im = im.copy()
-            #back_im = back_im.resize((240, 135))
-            #back_im.save(folder_path+r"\resize"+str(numP)+".png", quality=95)
+            create_background(prompt,numP)
+            im = Image.open(folder_path+"\image"+ str(numP) +".png")
+            back_im = im.copy()
+            back_im = back_im.resize((240, 135))
+            back_im.save(folder_path+r"\resize"+str(numP)+".png", quality=95)
             icons["image"+ str(numP)] = tk.PhotoImage(file=folder_path+r"\resize"+ str(numP) +".png")
             tree1.insert('', 'end',image=icons["image"+ str(numP)],value=(scene, cut,content, seconds),tags=(numP))
             numP = numP + 1
