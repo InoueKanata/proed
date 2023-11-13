@@ -20,7 +20,7 @@ def index():
 
 
 #ファイル受け取り→受け取ったファイルの拡張子確認→禁忌辞書とすり合わせ→禁忌リストをjsonにして返す、一時的ににBardAIに使う文章を保存
-@app.route('/plotFile',methods=['PSOT','GET'])
+@app.route('/plotFile',methods=['POST','GET'])
 def plotfile():
     txtfile = request.files['txtfile']
     filename = secure_filename(txtfile.filename)
@@ -58,12 +58,8 @@ def tabooCheck():
 
     return jsonify({'result':result})
 
-@app.route('/storyboardFile')
+# @app.route('/storyboardFile')
 
-@app.route('/stroyboardCheck')
-
-
-
+# @app.route('/stroyboardCheck')
 if __name__ == '__main__':
     app.run(debug=True)
-
