@@ -1,5 +1,4 @@
 import React from 'react';
-import logo from './logo.svg';
 import './App.css';
 import {
   BrowserRouter as Router,
@@ -37,7 +36,13 @@ function App() {
       <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
         <Toolbar>
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            禁忌チェック
+            <Router>
+              <Routes>
+                <Route path="/" element ={<div>禁忌チェック</div>}/>
+                <Route path="/ekonte" element ={<div>絵・Vコンテ作成</div>}/>
+                <Route path="/settings" element ={<div>設定画面</div>}/>
+              </Routes>
+            </Router>
           </Typography>
         </Toolbar>
       </AppBar>
