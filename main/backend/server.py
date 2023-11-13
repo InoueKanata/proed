@@ -12,7 +12,8 @@ import os
 app = Flask(__name__)
 #jsonifyでjsonを送るときに日本語が文字化けしないようにするための設定
 app.config['JSON_AS_ASCIT']=False
-
+#CORSを使用して異なるオリジンからのリクエストを受け入れられるようにする
+CORS(app)
 @app.route('/',methods=['GET'])
 def index():
     return 'Hello, World!'
