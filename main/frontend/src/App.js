@@ -40,7 +40,7 @@ function App() {
               <Routes>
                 <Route path="/" element ={<div>禁忌チェック</div>}/>
                 <Route path="/ekonte" element ={<div>絵・Vコンテ作成</div>}/>
-                <Route path="/settings" element ={<div>設定画面</div>}/>
+                <Route path="/settings" element ={<div>設定</div>}/>
               </Routes>
             </Router>
           </Typography>
