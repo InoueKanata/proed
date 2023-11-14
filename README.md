@@ -13,6 +13,10 @@ main<br>
 各自が作成した機能（プログラム）を入れていくフォルダです。<br>
 ### ・main<br>
 最終成果物を保存するフォルダです。<br>
+## ライブラリのインストールについて<br>
+以下の2つをインストールしてください<br>
+・proed\requirements.txtのインストール<br>
+・"pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118"をターミナルで実行<br>
 ## 制作物について（2023年9月4日追記）<br>
 ### 全体の流れ <br>
 入:プロットの文章　.txt file<br>
