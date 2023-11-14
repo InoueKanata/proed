@@ -18,6 +18,7 @@ import {
   ListItemText,
   ThemeProvider,
   Link,
+  Box,
 } from '@mui/material';
 
 import EditIcon from '@mui/icons-material/Edit';
@@ -59,7 +60,7 @@ const App = () => {
           </Typography>
         </Toolbar>
       </AppBar>
-
+      <Box sx = {{display:'flex'}}>
       <Drawer
         sx={{
           width: 240,
@@ -67,6 +68,7 @@ const App = () => {
           '& .MuiDrawer-paper': {
             width: 240,
             boxSizing: 'border-box',
+            zIndex:(theme) => theme.zIndex.drawer
           },
         }}
         variant="permanent"
@@ -100,6 +102,7 @@ const App = () => {
           </ListItemButton>
         </List>
       </Drawer>
+      </Box>
       <Router>
         <Routes>
           <Route path="/" element={<Taboo onFileUpload={onFileUpload}/>} />
