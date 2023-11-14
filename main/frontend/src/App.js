@@ -28,8 +28,21 @@ import theme from './theme';
 import Ekonte from './routes/Ekonte';
 import Taboo from './routes/Taboo';
 import UserSettings from './routes/UserSetting';
+import axios from 'axios';
 
-function App() {
+const App = () => {
+  const onFileUpload = (file) =>{
+    const plotData = new FormData();
+    plotData.append(file,'file');
+    // postの中にurlを記入
+    axios.post('',plotData)
+    .then((response) => {
+      console.log('file upload done',response.data);
+    })
+    .catch((error)=>{
+      console.log('error',error);
+    });
+  };
   return (
     <ThemeProvider theme={theme}>
     <div className="App">
@@ -89,7 +102,7 @@ function App() {
       </Drawer>
       <Router>
         <Routes>
-          <Route path="/" element={<Taboo />} />
+          <Route path="/" element={<Taboo onFileUpload={onFileUpload}/>} />
           <Route path="/ekonte" element={<Ekonte/>} />
           <Route path="/settings" element={<UserSettings />} />
         </Routes>
