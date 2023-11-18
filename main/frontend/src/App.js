@@ -12,7 +12,6 @@ import {
   List,
   Typography,
   Divider,
-  ListItem,
   ListItemButton,
   ListItemIcon,
   ListItemText,
@@ -29,21 +28,9 @@ import theme from './theme';
 import Ekonte from './routes/Ekonte';
 import Taboo from './routes/Taboo';
 import UserSettings from './routes/UserSetting';
-import axios from 'axios';
+import TabooDownload from './routes/TabooDownload';
 
 const App = () => {
-  const onFileUpload = (file) =>{
-    const plotData = new FormData();
-    plotData.append(file,'file');
-    // postの中にurlを記入
-    axios.post('',plotData)
-    .then((response) => {
-      console.log('file upload done',response.data);
-    })
-    .catch((error)=>{
-      console.log('error',error);
-    });
-  };
   return (
     <ThemeProvider theme={theme}>
     <div className="App">
@@ -54,6 +41,7 @@ const App = () => {
               <Routes>
                 <Route path="/" element ={<div>禁忌チェック</div>}/>
                 <Route path="/ekonte" element ={<div>絵・Vコンテ作成</div>}/>
+                <Route path="/TabooDownload" element ={<div>絵・Vコンテ作成</div>}/>
                 <Route path="/settings" element ={<div>設定</div>}/>
               </Routes>
             </Router>
@@ -105,9 +93,10 @@ const App = () => {
       </Box>
       <Router>
         <Routes>
-          <Route path="/" element={<Taboo onFileUpload={onFileUpload}/>} />
+          <Route path="/" element={<Taboo/>} />
           <Route path="/ekonte" element={<Ekonte/>} />
           <Route path="/settings" element={<UserSettings />} />
+          <Route path="/TabooDownload" element={<TabooDownload/>} />
         </Routes>
       </Router>
     </div>

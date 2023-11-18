@@ -8,9 +8,11 @@ const theme = createTheme({
       contrastText: '#ffffff',
     },
     background: {
-      default: '#1a80df',
+      default: '#f8f8f8',
     },
-    text: { primary: '#3775fa' },
+    text: { 
+      primary: '#3775fa' 
+    },
   },
   components:{
     MuiContainer:{
