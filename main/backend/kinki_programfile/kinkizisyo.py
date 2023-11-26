@@ -21,19 +21,20 @@ def tokenize_mecab(text):
     wakati = MeCab.Tagger()
     tmp =  wakati.parse(text).replace("\t",",").split("\n")
     for i in tmp:
-        i = i.split(",")
+        i = i.replace("-",",").split(",")
         if i[0] == "EOS":
             break
-        if i[1] == "名詞" or i[1] =="動詞" or i[1] =="形容詞":
-            formed_array.append(i[0])
+        for j in range(len(i)):
+                if i[j] == "名詞" or i[j] =="動詞" or i[j] =="形容詞":
+                    formed_array.append(i[0])
     return formed_array
 
 #辞書とのすり合わせ。入力はStr array 出力は
 def kinki_dic(text_arr):
     #word2vecモデルのファイルパス読み込み
 
-    kinkizisyo_path = os.path.join(main_directory_path,'\backend\kinki_programfile\kinkizisyo.csv')
-    with open("kinki_programfile\\kinkzisyo.csv",encoding="utf-8") as f:
+    kinkizisyo_path = os.path.join(main_directory_path,'kinki_programfile\kinkizisyo.csv')
+    with open(kinkizisyo_path,encoding="utf-8") as f:
         reader = csv.reader(f)
         value = 0.6 #類似度判定用の値
         tmp_array = []
@@ -66,7 +67,7 @@ def main(file_path):
     for i in tmp_array:
         file_contentes = file_contentes.replace(i,"")
 
-    jsondata = json.dump([{
+    jsondata = json.dumps([{
         'id':item[0],
         'taboo':item[1],
         'summary':item[2],

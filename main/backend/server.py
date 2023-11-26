@@ -22,23 +22,25 @@ def index():
 #ファイル受け取り→受け取ったファイルの拡張子確認→禁忌辞書とすり合わせ→禁忌リストをjsonにして返す、一時的ににBardAIに使う文章を保存
 @app.route('/plotFile',methods=['POST','GET'])
 def plotfile():
-    txtfile = request.files['txtfile']
+    txtfile = request.files['file']
     filename = secure_filename(txtfile.filename)
     fileex = filename.rsplit('.',1)[1].lower()#ファイル拡張子を確認
     if fileex == 'txt':
-        path = os.path.dirname(os.path.abspath(__file__))
+        tmp = os.path.abspath(__file__)
+        path1 = os.path.dirname(tmp)
         #proed\main\backend
-        plot_saved_path = os.path.join(path,'/tmp','plottxt')
+        plot_saved_path = os.path.join(path1,'tmp','plottxt.txt')
 
         if txtfile:
             txtfile.save(plot_saved_path)
-        taboolist,removedtxt=kinkizisyo.main(os.path.join(plot_saved_path,'/plottxt.txt'))
+        path2 = os.path.join(path1,'tmp','plottxt.txt')
+        taboolist,removedtxt=kinkizisyo.main(path2)
 
-        removedtxt_saved_path = os.path.join(path,'/tmp','removedtext.txt')
+        removedtxt_saved_path = os.path.join(path1,'tmp','removedtext.txt')
         with open(removedtxt_saved_path,'w',encoding='utf-8')as f:
             f.write(removedtxt)
         
-        return jsonify({taboolist})
+        return jsonify(taboolist)
     else:
         return jsonify({'error':'A file extension other than .txt was selected.'})
 
@@ -46,7 +48,7 @@ def plotfile():
 @app.route('/tabooCheck',methods=['POST','GET'])
 def tabooCheck():
     path = os.path.dirname(os.path.abspath(__file__))
-    removedtxt_saved_path = os.path.join(path,'/tmp','removedtext.txt')
+    removedtxt_saved_path = os.path.join(path,'tmp','removedtext.txt')
     with open(removedtxt_saved_path,'r',encoding='utf-8') as f:
         removedtxt = f.read()
     data = request.get_json()

@@ -31,7 +31,8 @@ const Taboo = () => {
     axios.post('/plotFile',plotData)
     .then((response) => {
       console.log('file upload done',response.data);
-      setCheckedData(response.data)
+      setCheckedData(JSON.parse(response.data))
+      console.log(JSON.parse(response.data))
     })
     .catch((error)=>{
       console.log('error',error);
@@ -88,6 +89,7 @@ const Taboo = () => {
                         </TableRow>
                       </TableHead>
                       <TableBody>
+                      {console.log(checkedData)}
                       {checkedData.map((data) => (
                         <TableRow key={data.id}>
                           <TableCell style={{ width: '10%' }} align="right">{data.id}</TableCell>
