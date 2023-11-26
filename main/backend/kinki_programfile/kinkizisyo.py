@@ -6,13 +6,13 @@ from gensim.models import KeyedVectors
 import MeCab
 from PIL import Image
 import sys
-
+import json
 
 # 2つ上のディレクトリパスを計算
 main_directory_path = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
 # c:\Users\tabiu\Downloads\proed\main
 
-word2vec_model_path = os.path.join(main_directory_path,'\backend\kinki_programfile\model.vec')
+word2vec_model_path = os.path.join(main_directory_path,'kinki_programfile\model.vec')
 word2vec_model = KeyedVectors.load_word2vec_format(word2vec_model_path, binary=False)
 
 #「名詞」「動詞」「形容詞」のみの文章に整形する。入力はString 出力はStr array
@@ -65,7 +65,14 @@ def main(file_path):
             count +=1
     for i in tmp_array:
         file_contentes = file_contentes.replace(i,"")
-    print(result)
-    return result,file_contentes
+
+    jsondata = json.dump([{
+        'id':item[0],
+        'taboo':item[1],
+        'summary':item[2],
+        'plan':item[3],
+    }for item in result])
+
+    return jsondata,file_contentes
 
 

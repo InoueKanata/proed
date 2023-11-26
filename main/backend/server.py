@@ -1,7 +1,7 @@
 from flask import Flask
 from flask import request,make_response,jsonify
 from flask_cors import CORS
-from kinki_programfile import Bard,ekonte,kinkizisyo
+from kinki_programfile import bardai,ekonte,kinkizisyo
 from werkzeug.utils import secure_filename
 import os
 
@@ -38,7 +38,7 @@ def plotfile():
         with open(removedtxt_saved_path,'w',encoding='utf-8')as f:
             f.write(removedtxt)
         
-        return jsonify({'taboolist':taboolist})
+        return jsonify({taboolist})
     else:
         return jsonify({'error':'A file extension other than .txt was selected.'})
 
@@ -52,7 +52,7 @@ def tabooCheck():
     data = request.get_json()
     bardtoken = data['token']
     try:
-        result = Bard.main(removedtxt,bardtoken)
+        result = bardai.main(removedtxt,bardtoken)
     except Exception as e:
         return jsonify({'error':str(e)})
 

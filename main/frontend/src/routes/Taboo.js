@@ -23,10 +23,12 @@ const Taboo = () => {
   };
 
   const onFileUpload = () =>{
+    console.log(plotFile)
+
     const plotData = new FormData();
     plotData.append('file',plotFile);
     // postの中にurlを記入
-    axios.post('',plotData)
+    axios.post('/plotFile',plotData)
     .then((response) => {
       console.log('file upload done',response.data);
       setCheckedData(response.data)
@@ -68,7 +70,7 @@ const Taboo = () => {
                 <Button variant='outlined'onClick={filePathButton} fullWidth>ファイル選択</Button>
               </Grid>
               <Grid item xs={12} md={2} lg={2} >
-                <Button variant='outlined'onClick={onFileUpload()} fullWidth>実行</Button>
+                <Button variant='outlined'onClick={onFileUpload} fullWidth>実行</Button>
               </Grid>
             </Grid>
           </Container>
@@ -85,17 +87,17 @@ const Taboo = () => {
                           <TableCell style={{ width: '30%' }} align='right'>改善案</TableCell>
                         </TableRow>
                       </TableHead>
+                      <TableBody>
+                      {checkedData.map((data) => (
+                        <TableRow key={data.id}>
+                          <TableCell style={{ width: '10%' }} align="right">{data.id}</TableCell>
+                          <TableCell style={{ width: '30%' }} align="right">{data.taboo}</TableCell>
+                          <TableCell style={{ width: '30%' }} align="right">{data.summary}</TableCell>
+                          <TableCell style={{ width: '30%' }} align="right">{data.plan}</TableCell>
+                        </TableRow>
+                      ))}
+                      </TableBody>
                     </Table>
-                    <TableBody>
-                    {checkedData.map((data) => (
-                      <TableRow key={data.id}>
-                        <TableCell style={{ width: '10%' }} align="right">{data.id}</TableCell>
-                        <TableCell style={{ width: '30%' }} align="right">{data.taboo}</TableCell>
-                        <TableCell style={{ width: '30%' }} align="right">{data.summary}</TableCell>
-                        <TableCell style={{ width: '30%' }} align="right">{data.plan}</TableCell>
-                      </TableRow>
-                    ))}
-                    </TableBody>
                 </TableContainer>
               </Grid>
               <Grid item xs={12} md={6} lg={6}>

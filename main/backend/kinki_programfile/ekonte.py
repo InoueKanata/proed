@@ -15,16 +15,13 @@ import deepl
 import glob
 from moviepy.editor import *
 
-import kinkizisyo
-import Bard
-
 
 key=os.environ["DEEPL_AUTH_KEY"]
 translator = deepl.Translator(key)
 #画像生成プログラム
 hugging_token = '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'
-ldm = StableDiffusionPipeline.from_pretrained("CompVis/stable-diffusion-v1-4",revision="fp16",torch_dtype=torch.float16,use_auth_token=hugging_token).to("cuda")
 def create_background(prompt,numP):
+    ldm = StableDiffusionPipeline.from_pretrained("CompVis/stable-diffusion-v1-4",revision="fp16",torch_dtype=torch.float16,use_auth_token=hugging_token).to("cuda")
     with autocast("cuda"):
         image = ldm(prompt,
                     negative_prompt="sketches, painting, (character, person, human, people, hands, girl, man, :1.3), user name",
