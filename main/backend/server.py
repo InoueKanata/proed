@@ -51,8 +51,12 @@ def tabooCheck():
     removedtxt_saved_path = os.path.join(path,'tmp','removedtext.txt')
     with open(removedtxt_saved_path,'r',encoding='utf-8') as f:
         removedtxt = f.read()
-    data = request.get_json()
-    bardtoken = data['token']
+
+    setting_file_path = os.path.join(path,'tmp','setting.csv')
+    with open(setting_file_path,'r',encoding='utf-8') as f:
+        reader = f.read()
+    bardtoken = reader[0][1]
+
     try:
         result = bardai.main(removedtxt,bardtoken)
     except Exception as e:

@@ -1,13 +1,21 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {Button, ThemeProvider, Grid, TextField, Container, Box, Paper, CssBaseline, Fab } from '@mui/material';
 import theme from '../theme';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import KeyboardDoubleArrowRightIcon from '@mui/icons-material/KeyboardDoubleArrowRight';
-const TabooDownload = () => {
-    const navi = useNavigate();
+import axios from 'axios';
+const TabooDownload = async () => {
+  const navi = useNavigate();
+  const location = useLocation();
+  const receivedData1 = location.state?.data1 || '';
+  const receivedData2 = location.state?.data2 || '';
+  const [responseData,setResponseData] = useState('')
 
-    const toEkonte =()=>{
-        navi('/Ekonte')
+  const response = await axios.get('/tabooCheck');
+    setResponseData(JSON.parse(response.data))
+
+  const toEkonte =()=>{
+      navi('/Ekonte')
     }
   return (
     <div className='TabooDownload'>
@@ -22,7 +30,7 @@ const TabooDownload = () => {
                 fullWidth
                 id = "readOnlyFilePath"
                 variant='standard'
-                // value={}
+                value={receivedData1}
                 InputProps={{
                 readOnly:true,
                 }}
@@ -38,7 +46,7 @@ const TabooDownload = () => {
                     id = "TabooUnCheckedText"
                     label = "入力されたプロット"
                     variant='outlined'
-                    // value={}
+                    value={receivedData2}
                     InputProps={{
                     readOnly:true,
                     }}
@@ -50,7 +58,7 @@ const TabooDownload = () => {
                     id = "TabooCheckedText"
                     variant='outlined'
                     label="改善後のプロット"
-                    // value={}
+                    value={responseData}
                     InputProps={{
                     readOnly:true,
                     }}

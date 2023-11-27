@@ -1,21 +1,29 @@
 import React from 'react';
 import { useState } from 'react';
-import {Button, ThemeProvider, Grid, TextField, Container, Box, Table, TableContainer, Paper, TableCell, TableHead, TableBody,  CssBaseline, TableRow } from '@mui/material';
+import {Button, ThemeProvider, Grid, TextField, Container, Box, Table, TableContainer, Paper, TableCell, TableHead, TableBody,  CssBaseline, TableRow, Checkbox } from '@mui/material';
 import axios from 'axios';
 import theme from '../theme';
-import { useNavigate } from 'react-router-dom';
+import {  useNavigate } from 'react-router-dom';
 
 const Taboo = () => {
   const navi = useNavigate();
   const [plotFile,setPlotFile] = useState(null);
   const [fileContent,setFileContent] = useState('テキストファイルを選択してください')
   const [checkedData,setCheckedData]= useState([])
+  const [plotFileRead,setPlotfileRead] = useState('')
 
   const filePathChange=(event)=>{
     const selectedPlotFile=event.target.files[0];
     if (event){
       setFileContent(selectedPlotFile.name);
       setPlotFile(selectedPlotFile)
+
+      const reader = new FileReader();
+      reader.onloadend = () => {
+      const content = reader.result;
+      setPlotfileRead(content);
+      }
+      reader.readAsText(selectedPlotFile)
     }
   }
   const filePathButton = () =>{
@@ -40,7 +48,9 @@ const Taboo = () => {
   };
 
   const toTabooDownload = () =>{
-    navi('/TabooDownload')
+    const data1 = fileContent
+    const data2 = plotFileRead
+    navi('/TabooDownload',{state:{data1,data2}})
   };
   return (
     <div className="Taboo">
@@ -82,7 +92,8 @@ const Taboo = () => {
                     <Table >
                       <TableHead>
                         <TableRow>
-                          <TableCell style={{ width: '10%' }} align='right'>No.</TableCell>
+                          <TableCell style={{ width: '5%' }} align='right'></TableCell>
+                          <TableCell style={{ width: '5%' }} align='right'>No.</TableCell>
                           <TableCell style={{ width: '30%' }} align='right'>検出禁忌</TableCell>
                           <TableCell style={{ width: '30%' }} align='right'>概要</TableCell>
                           <TableCell style={{ width: '30%' }} align='right'>改善案</TableCell>
@@ -92,7 +103,10 @@ const Taboo = () => {
                       {console.log(checkedData)}
                       {checkedData.map((data) => (
                         <TableRow key={data.id}>
-                          <TableCell style={{ width: '10%' }} align="right">{data.id}</TableCell>
+                          <TableCell style={{ width: '5%' }}>
+                            <Checkbox/>
+                          </TableCell>
+                          <TableCell style={{ width: '5%' }} align="right">{data.id}</TableCell>
                           <TableCell style={{ width: '30%' }} align="right">{data.taboo}</TableCell>
                           <TableCell style={{ width: '30%' }} align="right">{data.summary}</TableCell>
                           <TableCell style={{ width: '30%' }} align="right">{data.plan}</TableCell>
@@ -106,12 +120,17 @@ const Taboo = () => {
               <TextField
               inputProps={{
                 readOnly:true,
+                style:{overflowWrap:'anywhere'}
               }}
+              multiline
               fullWidth
               id = "readOnlyTabooText"
-              // value={}
+              value={plotFileRead}
               variant='outlined'
-              label='検出された禁忌'
+              label='プロット'
+              InputLabelProps={{
+                shrink:true,
+              }}
               >
               </TextField>
             </Grid>
