@@ -54,6 +54,7 @@ def kinki_dic(text_arr):
 def main(file_path):
     sentence_array = []
     result = []
+    t=[]
     count = 1
     with open(file_path,"r",encoding="utf-8") as f:
         file_contentes = f.read()
@@ -64,7 +65,10 @@ def main(file_path):
         if sentence_array:
             result.append([count,sentence_array[0][0],sentence_array[0][1],sentence_array[0][2]])#NO.、禁忌(文章)、概要、改善案
             count +=1
-    for i in tmp_array:
+        if tmp_array:
+            for j in tmp_array:
+                t.append(j)
+    for i in t:
         file_contentes = file_contentes.replace(i,"")
 
     jsondata = json.dumps([{

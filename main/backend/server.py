@@ -1,9 +1,10 @@
-from flask import Flask
+from flask import Flask, send_file
 from flask import request,make_response,jsonify
 from flask_cors import CORS
 from kinki_programfile import bardai,ekonte,kinkizisyo
 from werkzeug.utils import secure_filename
 import os
+import csv
 
 #↓間違ってるかも
 #POSTはWebからFlaskにデータを送る時に使う。（web側から観たら"送る"）
@@ -54,15 +55,18 @@ def tabooCheck():
 
     setting_file_path = os.path.join(path,'tmp','setting.csv')
     with open(setting_file_path,'r',encoding='utf-8') as f:
-        reader = f.read()
-    bardtoken = reader[0][1]
+        reader = csv.reader(f)
+        bardtoken = [row for row in reader]
 
     try:
-        result = bardai.main(removedtxt,bardtoken)
+        result = bardai.main(bardtoken[0][1],removedtxt)
     except Exception as e:
         return jsonify({'error':str(e)})
-
-    return jsonify({'result':result})
+    
+    bard_text_path = os.path.join(path,'tmp','bard_text.txt')
+    with open(bard_text_path,'w',encoding='utf-8') as f:
+        f.write(result)
+    return send_file(bard_text_path,as_attachment=True)
 
 # @app.route('/storyboardFile')
 

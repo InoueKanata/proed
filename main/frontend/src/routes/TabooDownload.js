@@ -1,18 +1,46 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {Button, ThemeProvider, Grid, TextField, Container, Box, Paper, CssBaseline, Fab } from '@mui/material';
 import theme from '../theme';
 import { useLocation, useNavigate } from 'react-router-dom';
 import KeyboardDoubleArrowRightIcon from '@mui/icons-material/KeyboardDoubleArrowRight';
 import axios from 'axios';
-const TabooDownload = async () => {
+const TabooDownload = () => {
   const navi = useNavigate();
   const location = useLocation();
   const receivedData1 = location.state?.data1 || '';
   const receivedData2 = location.state?.data2 || '';
-  const [responseData,setResponseData] = useState('')
+  const [responseText,setResponseText] = useState('')
 
-  const response = await axios.get('/tabooCheck');
-    setResponseData(JSON.parse(response.data))
+
+  useEffect(() => {
+    const fetchData = async() => {
+      try{
+        const response = await axios.get('/tabooCheck',{
+          responseType:'text',
+        });
+        const jsonString = JSON.stringify(response.data);
+        const jsonStringReplace = jsonString.replace(/\\n/g, '\n');
+        setResponseText(jsonStringReplace);
+        console.log(jsonStringReplace)
+        console.log(jsonStringReplace);
+      }catch(error){
+        console.error('something error',error)
+      }
+    };
+    fetchData();
+  },[]);
+  
+  const onClickDownload = () =>{
+    const data = responseText;
+    const blob = new Blob([data],{type:'text/plain'});
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download','plot.txt');
+    document.body.appendChild(link);
+    link.click();
+    link.parentNode.removeChild(link);
+  }
 
   const toEkonte =()=>{
       navi('/Ekonte')
@@ -28,9 +56,13 @@ const TabooDownload = async () => {
               <Grid item xs={12} md={12} lg={12} >
                 <TextField
                 fullWidth
+                multiline
                 id = "readOnlyFilePath"
                 variant='standard'
                 value={receivedData1}
+                InputLabelProps={{
+                  shrink:true,
+                }}
                 InputProps={{
                 readOnly:true,
                 }}
@@ -43,24 +75,34 @@ const TabooDownload = async () => {
                 <Grid item xs={12} md={6} lg={6}>
                     <TextField
                     fullWidth
+                    multiline
                     id = "TabooUnCheckedText"
                     label = "入力されたプロット"
                     variant='outlined'
                     value={receivedData2}
+                    InputLabelProps={{
+                      shrink:true,
+                    }}
                     InputProps={{
                     readOnly:true,
+                    style:{overflowWrap:'anywhere'}
                     }}
                     />
                 </Grid>
                 <Grid item xs={12} md={6} lg={6}>
                     <TextField
                     fullWidth
+                    multiline
                     id = "TabooCheckedText"
                     variant='outlined'
                     label="改善後のプロット"
-                    value={responseData}
+                    value={responseText}
                     InputProps={{
                     readOnly:true,
+                    style:{
+                      overflowWrap:'anywhere',
+                      whiteSpace:'pre-line',
+                  }
                     }}
                     />
                 </Grid> 
@@ -68,7 +110,7 @@ const TabooDownload = async () => {
           </Container>
           <Container maxWidth="lg" component={Paper} sx={{marginTop:5}}>
             <Grid item xs={12} md={12} lg={12}>
-              <Button variant='outlined' fullWidth >ダウンロード</Button>
+              <Button variant='outlined' fullWidth onClick={onClickDownload}>ダウンロード</Button>
             </Grid>
           </Container>
         </Box>
