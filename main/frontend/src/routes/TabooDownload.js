@@ -20,9 +20,10 @@ const TabooDownload = () => {
         });
         const jsonString = JSON.stringify(response.data);
         const jsonStringReplace = jsonString.replace(/\\n/g, '\n');
-        setResponseText(jsonStringReplace);
-        console.log(jsonStringReplace)
-        console.log(jsonStringReplace);
+        const jsonStringReplaceR = jsonStringReplace.replace(/\\r/g,' ')
+        setResponseText(jsonStringReplaceR);
+        console.log(jsonStringReplaceR)
+        console.log(jsonStringReplaceR);
       }catch(error){
         console.error('something error',error)
       }
