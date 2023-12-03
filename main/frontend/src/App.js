@@ -27,6 +27,7 @@ import SettingsIcon from '@mui/icons-material/Settings';
 
 import theme from './theme';
 import Ekonte from './routes/Ekonte';
+import Ekonte_Write from './routes/Ekonte_write';
 import Taboo from './routes/Taboo';
 import UserSettings from './routes/UserSetting';
 
@@ -86,6 +87,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Taboo />} />
           <Route path="/ekonte" element={<Ekonte/>} />
+          <Route path="/ekonte_write" element={<Ekonte_Write />} />
           <Route path="/settings" element={<UserSettings />} />
         </Routes>
       </Router>
