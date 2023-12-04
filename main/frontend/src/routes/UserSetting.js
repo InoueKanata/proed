@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { ThemeProvider, Grid, TextField, Container, Box, Paper, CssBaseline} from '@mui/material';
 import theme from '../theme';
-import { json, useLocation, useNavigate } from 'react-router-dom';
-import KeyboardDoubleArrowRightIcon from '@mui/icons-material/KeyboardDoubleArrowRight';
 import axios from 'axios';
 
 const UserSettings = () => {
@@ -28,9 +26,9 @@ const UserSettings = () => {
   const postdeeplvalue = async(event)=>{
     axios.post('/setting',{deeplToken:event.target.value})
   } 
-  const bardTokenDefaultValue = defaultValue.length = 3? defaultValue[0].bardToken:'';
-  const sDTokenDefaultValue = defaultValue.length = 3? defaultValue[0].sDToken:'';
-  const deeplTokenDefaultValue = defaultValue.length = 3? defaultValue[0].deeplToken:'';
+  const bardTokenDefaultValue = defaultValue.length === 3? defaultValue[0].bardToken:'';
+  const sDTokenDefaultValue = defaultValue.length === 3? defaultValue[0].sDToken:'';
+  const deeplTokenDefaultValue = defaultValue.length === 3? defaultValue[0].deeplToken:'';
   
   return (
     <div className='UserSetting'>
