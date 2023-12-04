@@ -68,6 +68,7 @@ const Taboo = () => {
                 value={fileContent}
                 InputProps={{
                 readOnly:true,
+                style:{color:'#707070'}
                 }}
                 />
               </Grid>
@@ -106,10 +107,10 @@ const Taboo = () => {
                           <TableCell style={{ width: '5%' }}>
                             <Checkbox/>
                           </TableCell>
-                          <TableCell style={{ width: '5%' }} align="right">{data.id}</TableCell>
-                          <TableCell style={{ width: '30%' }} align="right">{data.taboo}</TableCell>
-                          <TableCell style={{ width: '30%' }} align="right">{data.summary}</TableCell>
-                          <TableCell style={{ width: '30%' }} align="right">{data.plan}</TableCell>
+                          <TableCell style={{ width: '5%',color:'#000000'}} align="right">{data.id}</TableCell>
+                          <TableCell style={{ width: '30%',color:'#000000'}} align="right">{data.taboo}</TableCell>
+                          <TableCell style={{ width: '30%',color:'#000000'}} align="right">{data.summary}</TableCell>
+                          <TableCell style={{ width: '30%',color:'#000000'}} align="right">{data.plan}</TableCell>
                         </TableRow>
                       ))}
                       </TableBody>
@@ -130,6 +131,9 @@ const Taboo = () => {
               label='プロット'
               InputLabelProps={{
                 shrink:true,
+              }}
+              InputProps={{
+                style:{color:"#000000"}
               }}
               >
               </TextField>

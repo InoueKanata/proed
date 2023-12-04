@@ -66,6 +66,7 @@ const TabooDownload = () => {
                 }}
                 InputProps={{
                 readOnly:true,
+                style:{color:"#000000"}
                 }}
                 />
               </Grid>
@@ -86,7 +87,7 @@ const TabooDownload = () => {
                     }}
                     InputProps={{
                     readOnly:true,
-                    style:{overflowWrap:'anywhere'}
+                    style:{overflowWrap:'anywhere',color:"#000000"}
                     }}
                     />
                 </Grid>
@@ -103,6 +104,7 @@ const TabooDownload = () => {
                     style:{
                       overflowWrap:'anywhere',
                       whiteSpace:'pre-line',
+                      color:"#000000"
                   }
                     }}
                     />

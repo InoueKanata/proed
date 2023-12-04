@@ -1,7 +1,7 @@
 from flask import Flask, send_file
 from flask import request,make_response,jsonify
 from flask_cors import CORS
-from kinki_programfile import bardai,ekonte,kinkizisyo
+from kinki_programfile import bardai,kinkizisyo
 from werkzeug.utils import secure_filename
 import os
 import csv
