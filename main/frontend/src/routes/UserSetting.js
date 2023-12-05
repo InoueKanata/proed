@@ -4,12 +4,13 @@ import theme from '../theme';
 import axios from 'axios';
 
 const UserSettings = () => {
-  const [defaultValue,setdefaultValue] = useState('')
+  const [defaultValue,setdefaultValue] = useState([])
   useEffect(() => {
     const openSettingPage = async()=>{
       try{
         const response = await axios.get('/setting',{responseType:'json'})
-        setdefaultValue(response.data)
+        setdefaultValue(response.data||[]);
+        // console.log(response.data)
       }catch(error){
         console.error(error)
       }
@@ -26,10 +27,18 @@ const UserSettings = () => {
   const postdeeplvalue = async(event)=>{
     axios.post('/setting',{deeplToken:event.target.value})
   } 
-  const bardTokenDefaultValue = defaultValue.length === 3? defaultValue[0].bardToken:'';
-  const sDTokenDefaultValue = defaultValue.length === 3? defaultValue[0].sDToken:'';
-  const deeplTokenDefaultValue = defaultValue.length === 3? defaultValue[0].deeplToken:'';
-  
+  const arrayValue = JSON.parse(`[${defaultValue}]`);
+  const value = arrayValue[0]
+  let bardTokenDefaultValue = ""
+  let sDTokenDefaultValue = ""
+  let deeplTokenDefaultValue = ""
+  if (value){ 
+  bardTokenDefaultValue = value.length === 3 ? value.find(item => item[0] === 'bard_api_key')[1] : '';
+  sDTokenDefaultValue = value.length === 3 ? value.find(item => item[0] === 'stablediffusion_api_key')[1] : '';
+  deeplTokenDefaultValue =value.length === 3 ? value.find(item => item[0] === 'DEEPL_api_key')[1] : '';
+};
+
+  console.log(bardTokenDefaultValue)
   return (
     <div className='UserSetting'>
       <h2>設定画面</h2>
@@ -50,7 +59,7 @@ const UserSettings = () => {
                 style:{color:"#000000"}
                 }}
               onChange={postBardvalue}
-              value={bardTokenDefaultValue}
+              defaultValue={bardTokenDefaultValue}
                 >
               </TextField>
             </Grid>
@@ -66,7 +75,7 @@ const UserSettings = () => {
                 style:{color:"#000000"}
                 }}
                 onChange={postSDvalue}
-                value={sDTokenDefaultValue}>
+                defaultValue={sDTokenDefaultValue}>
               </TextField>
             </Grid>
             <Grid item xs={12} md={12} lg={12}>
@@ -81,7 +90,7 @@ const UserSettings = () => {
                 style:{color:"#000000"}
                 }}
                 onChange={postdeeplvalue}
-                value={deeplTokenDefaultValue}>
+                defaultValue={deeplTokenDefaultValue}>
               </TextField>
             </Grid>
           </Grid>

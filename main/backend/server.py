@@ -5,10 +5,10 @@ from kinki_programfile import bardai,kinkizisyo
 from werkzeug.utils import secure_filename
 import os
 import csv
+import json
 
-#↓間違ってるかも
-#POSTはWebからFlaskにデータを送る時に使う。（web側から観たら"送る"）
-#GETはFlaskからWebにデータを送るときに使う。（web側から観たら"受け取る"）
+#POSTはデータを送る時に使う。
+#GETはデータを送るときに使う。
 
 app = Flask(__name__)
 #jsonifyでjsonを送るときに日本語が文字化けしないようにするための設定
@@ -71,5 +71,47 @@ def tabooCheck():
 # @app.route('/storyboardFile')
 
 # @app.route('/stroyboardCheck')
+
+@app.route('/setting',methods=['POST'])
+def settingPost():
+    def opencsv(number,token):
+        path = os.path.dirname(__file__)
+        with open(os.path.join(path,"tmp","setting.csv"),'r') as f:
+            reader = csv.reader(f)
+            readerlist = [i for i in reader]
+        if token == "":
+            token ="null"
+        if number == 0:
+            row = ["bard_api_key",token]
+            readerlist[0] = row
+        elif number == 1:
+            row = ["stablediffusion_api_key",token]
+            readerlist[1] = row
+        elif number == 2:
+            row = ["DEEPL_api_key",token]
+            readerlist[2] = row
+        with open(os.path.join(path,"tmp","setting.csv"),'w',newline='') as f:
+            writer = csv.writer(f)
+            writer.writerows(readerlist)
+
+    tokendict = request.json
+    if "bardToken" in tokendict:
+        opencsv(0, tokendict["bardToken"])
+    elif "sDToken" in tokendict:
+        opencsv(1, tokendict["sDToken"])
+    elif "deeplToken" in tokendict:
+        opencsv(2, tokendict["deeplToken"])
+    return "yes"
+
+@app.route('/setting',methods=['GET'])
+def settingGet():
+    path = os.path.dirname(__file__)
+    with open(os.path.join(path,"tmp","setting.csv")) as f:
+        reader = csv.reader(f)
+        readerlist = [i for i in reader]
+        json_data = json.dumps(readerlist)
+    return jsonify(json_data)
+
+
 if __name__ == '__main__':
     app.run(debug=True)
