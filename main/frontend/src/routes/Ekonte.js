@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Button, TextField } from '@mui/material';
+import { Table, TableBody, ThemeProvider,TableCell, TableContainer, TableHead, TableRow, Button, TextField, Box, Container, Paper} from '@mui/material';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import theme from '../theme.js';
@@ -30,11 +30,11 @@ const Ekonte = () => {
         <Button
           variant="outlined"
           onClick={() => handleButtonClick(row.name)}
-          style={{ margin: '0', padding: '6px' }}>
+          style={{ textAlign: 'right'}}>
           決定
         </Button>
       ),
-      style: { paddingRight: '0' },
+      style: { textAlign: 'right'},
     }
   ];
 
@@ -92,8 +92,19 @@ const Ekonte = () => {
   return (
     <div>
       <h2>禁忌チェック</h2>
-
-      <TableContainer style={{marginLeft: '300px', paddingRight: '30px'}}>
+      <ThemeProvider theme={ theme }>
+      <Box
+        component="form"
+        sx={{
+          marginLeft:60,
+          '& .MuiTextField-root': { m: 3},
+          color: 'black',
+        }}
+        noValidate
+        autoComplete="off"
+        >
+      <Container Container maxWidth="xl" component={Paper} sx={{marginTop:5}}>
+      <TableContainer>
         <Table>
           <TableHead>
             <TableRow>
@@ -122,6 +133,9 @@ const Ekonte = () => {
         onChange={(e) => setInputValue(e.target.value)}
       />
       <Button variant="outlined" onClick={createButtonClick} disabled={inputValue.trim() === ''}>プロジェクトの新規作成</Button>
+      </Container>
+      </Box>
+      </ThemeProvider>
     </div>
   );
 };

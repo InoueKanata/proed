@@ -1,11 +1,13 @@
-from flask import Flask, send_file
-from flask import request,make_response,jsonify
+from flask import request, jsonify, Flask, send_file
 from flask_cors import CORS
 from kinki_programfile import bardai,kinkizisyo
 #from konte_programfile import ekonte
+#↑テストが重くなるためコメントアウト中
 from werkzeug.utils import secure_filename
 import os
 import csv
+import base64
+import re
 
 #↓間違ってるかも
 #POSTはWebからFlaskにデータを送る時に使う。（web側から観たら"送る"）
@@ -94,7 +96,6 @@ def create_csv():
         print(save_path2)
         with open(save_path, 'w', newline='') as csv_file:
             writer = csv.writer(csv_file)
-            writer.writerow(['シーン', 'カット', '人数', '場所', '概要', 'セリフ', '秒数'])
         # 成功メッセージを返す
         return jsonify({'message': f'CSV file ({filename}.csv) created successfully.'})
 
@@ -120,5 +121,61 @@ def fetch_csv_content(file_name):
     except Exception as e:
         return jsonify({'error': str(e)})
     
+@app.route('/writeDataToCSV/<file_name>', methods=['POST'])
+def write_data_to_csv(file_name):
+    try:
+        # リクエストからデータを取得
+        data = request.get_json()
+
+        if not data:
+            raise Exception('Data not provided in the request.')
+
+        # CSVファイルにデータを追加する
+        folder_path = 'konte_programfile/projectfile'
+        file_path = os.path.join(folder_path, f"{file_name}.csv")
+
+        if not os.path.exists(file_path):
+            raise FileNotFoundError(f"CSV file '{file_name}.csv' not found.")
+
+        with open(file_path, 'a', newline='', encoding='shift-jis') as csv_file:
+            writer = csv.writer(csv_file)
+            # データをCSVファイルに書き込む
+            data_list = list(data.values())
+            writer.writerow(data_list)
+
+        # 成功メッセージを返す
+        return jsonify({'message': f'Data added to CSV file ({file_name}.csv) successfully.'})
+
+    except Exception as e:
+        # エラーが発生した場合はエラーメッセージを返す
+        return jsonify({'error': str(e)})
+
+@app.route('/saveImage', methods=['POST'])
+def save_image():
+    try:
+        data = request.get_json()
+        dataURL = data.get('dataURL')
+
+        if not dataURL:
+            raise Exception('DataURL not provided in the request.')
+
+        # DataURLから画像データを抽出
+        image_data = re.sub('^data:image/.+;base64,', '', dataURL)
+        binary_data = base64.b64decode(image_data)
+
+        # 画像を保存するパス
+        save_directory = './konte_programfile/projectfile/test'
+        file_name = 'saved_image.png'
+        save_path = os.path.join(save_directory, file_name)
+        print(save_path)
+        # 画像を保存
+        with open(save_path, 'wb') as file:
+            file.write(binary_data)
+
+        return jsonify({'success': True})
+    except Exception as e:
+        return jsonify({'error': str(e), 'success': False})
+
+
 if __name__ == '__main__':
     app.run(debug=True)

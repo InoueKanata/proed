@@ -1,4 +1,5 @@
 import React from 'react';
+import { Table, Button } from '@mui/material';
 
 const Taboo = () => {
   return (
