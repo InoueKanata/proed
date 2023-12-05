@@ -13,7 +13,7 @@ def create_background():
     negative_prompt='(worst quality, low quality:1.3), 1girl, solo, lowres, artist name, signature, watermark, low contrast,no people'
     ldm = StableDiffusionImg2ImgPipeline.from_pretrained("CompVis/stable-diffusion-v1-4",revision="fp16",torch_dtype=torch.float16,use_auth_token=hugging_token).to("cuda")
     with autocast("cuda"):
-        init_image = Image.open(r"C:\ProgramFolder\branch\proed\main\backend\input.png").convert("RGB")
+        init_image = Image.open(r"projectfile/test/input.png").convert("RGB")
         init_image = init_image.resize((640, 320))  # 生成画像のサイズを指定
         image = ldm(prompt,
             image=init_image,  # 入力画像
@@ -24,7 +24,7 @@ def create_background():
             guidance_scale=7.5,  # プロンプトの重み（生成画像の類似度（0〜20)）
             num_inference_steps=50,  # 画像生成に費やすステップ数
             ).images[0]
-    image.save(r"imageSD.png")
+    image.save(r"projectfile/test/imageSD.png")
 while(True):
     print("入力")
     a=input()
