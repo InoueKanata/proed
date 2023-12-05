@@ -6,3 +6,6 @@ Beforeintegration/UI/kinki_programfile/model.vec
 Beforeintegration\UI\__pycache__
 venv
 main/backend/kinki_programfile/model.vec
+main/backend/konte_programfile/__pycache__
+main/backend/__pycache__
+main/backend/kinki_programfile/__pycache__
