@@ -17,3 +17,6 @@ main/backend/kinki_programfile/__pycache__/Bard.cpython-310.pyc
 /main/backend/tmp/**
 !/main/backend/tmp/**/
 !/main/backend/tmp/**/.gitkeep
+/main/frontend/public/images/**
+!/main/frontend/public/images/**/
+!/main/frontend/public/images/**/.gitkeep

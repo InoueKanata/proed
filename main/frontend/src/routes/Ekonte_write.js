@@ -3,8 +3,6 @@ import { Button,ThemeProvider,TextField,Box,Table,TableBody,TableCell,TableConta
 import theme from '../theme';
 //import { useHistory } from 'react-router-dom';
 //↑最期まで使用しなかった場合削除。アンドゥの機能用
-//import myImage from './/image.png'
-//↑画像読み込みに使用
 const Ekonte_write = () => {
   let csvname;
   const popupRef = useRef(null);
@@ -24,8 +22,9 @@ const Ekonte_write = () => {
   };
   var param = window.location.search;
   const [triggerEffect, setTriggerEffect] = useState(false);
-  
   const decodedParam = decodeURIComponent(param);
+  const [scenetxt, setScenetxt] = useState("");
+  const [cuttxt, setCuttxt] = useState("");
   csvname = decodedParam;
   if(csvname.includes('.csv'))
     csvname = String(csvname.slice(1,-4));
@@ -75,34 +74,28 @@ const Ekonte_write = () => {
     const canvas = canvasRef.current;
     return canvas.toDataURL(); // canvasの内容をDataURLとして取得
   };
-
-  const handleSaveToFolder = async () => {
+  const handleSaveToFolder = async (row) => {
   const dataURL = getCanvasDataURL();
-
-  // サーバーサイドに画像を保存するためのエンドポイントURL
-  const saveImageEndpoint = 'http://localhost:5000/saveImage';
-
   try {
-    // サーバーサイドに画像を保存するリクエストを送信
-    const response = await fetch(saveImageEndpoint, {
+    // リクエストを送信
+    const response = await fetch(`http://localhost:5000/saveImage/${csvname}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ dataURL }),
+      body: JSON.stringify(),
     });
-
-    const result = await response.json();
-    if (result.success) {
-      alert('画像をフォルダに保存しました！');
+    const data = await response.json();
+    if (data.error) {
+      console.error(data.error);
     } else {
-      console.error(result.error);
+      setTriggerEffect(true);
     }
   } catch (error) {
     console.error(error);
   }
+  setTriggerEffect(true);
 };
-
 
   const handleCanvasMouseDown = (e) => {
     setDrawing(true);
@@ -147,11 +140,6 @@ const Ekonte_write = () => {
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     setLineColors([]);
   };
-
-  /*const handleSaveToFolder = () => {
-    // フォルダに保存する処理を実装（ここでは具体的な実装は省略）
-    alert('画像をフォルダに保存しました！');
-  };*/
 
   const handlePopupOpen = () => {
     const popup = popupRef.current;
@@ -209,7 +197,33 @@ const Ekonte_write = () => {
       if (data.error) {
         console.error(data.error);
       } else {
-        // 成功メッセージなどを処理（必要に応じて）
+        setTriggerEffect(true);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+    setTriggerEffect(true);
+  };
+
+  const handleDeleteRow = async (row) => {
+    try {
+      const requestData = {
+        scene: row[0],
+        cut: row[1],
+      };
+      // リクエストを送信
+      const response = await fetch(`http://localhost:5000/deleteRowFromCSV/${csvname}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestData),
+      });
+      const data = await response.json();
+      if (data.error) {
+        console.error(data.error);
+      } else {
+        setTriggerEffect(true);
       }
     } catch (error) {
       console.error(error);
@@ -230,10 +244,7 @@ const Ekonte_write = () => {
         noValidate
         autoComplete="off"
         >
-        <Container Container maxWidth="xl" component={Paper} sx={{marginTop:5}}>
-        <Button variant="outlined" style={{marginRight:'10px'}}>画像データを選択</Button>
-        <Button variant="outlined" onClick={() => handlePopupOpen()}>ペイントアプリを開く</Button>
-        <br/>
+        <Container Container maxWidth="xl" component={Paper} sx={{marginTop:5}}>プロジェクト名：「{csvname}」<br/>同じシーン、カット数が存在する場合は上書きされます。反映されない場合はリロードしてください。<br/>
         <div
           ref={popupRef}
           style={{
@@ -323,15 +334,15 @@ const Ekonte_write = () => {
             />
           </div>
         </div>
-          <TextField id="scene" label="シーン" style={{ marginLeft:'60px'}}sx={{ width: '10ch' }} type="number" onChange={handleSceneNumberChange} size="small"/>
-          <TextField id="cut" label="カット" sx={{ width: '10ch' }} type="number" onChange={handleSceneNumberChange} size="small"/>
+          <TextField id="scene" label="シーン" style={{ marginLeft:'60px'}}sx={{ width: '10ch' }} type="number" onChange={(event) => {handleSceneNumberChange(event); setScenetxt(event.target.value);}} size="small"/>
+          <TextField id="cut" label="カット" sx={{ width: '10ch' }} type="number" onChange={(event) => {handleSceneNumberChange(event); setCuttxt(event.target.value);}} size="small"/>
           <TextField id="people" label="人数" sx={{ width: '10ch' }} type="number" onChange={handleSceneNumberChange} size="small"/>
           <TextField id="place" label="場所" placeholder="どこで" sx={{ width: '25ch' }} multiline size="small"/>
           <TextField id="overview" label="概要" placeholder="何人の誰が、何をして、どこを向いているか" sx={{ width: '50ch' }} multiline size="small"/>
           <TextField id="lines" label="セリフ"  sx={{ width: '25ch' }} multiline size="small"/>
           <TextField id="seconds" label="秒"  sx={{ width: '10ch' }} size="small"/>
         <br/>
-        <Button variant="outlined" style={{margin:'10px'}}onClick={handleAddDataToCSV}>追加</Button>
+        <Button disabled={!scenetxt || !cuttxt} variant="outlined" style={{margin:'10px'}}onClick={handleAddDataToCSV}>追加・上書き</Button>
         </Container>
         <Container Container maxWidth="xl" component={Paper} sx={{marginTop:5}}>
           <TableContainer component={Paper} style={{ marginLeft: '0px', marginRight: '260px',width: '100%', overflowX: 'auto'}}>
@@ -346,8 +357,8 @@ const Ekonte_write = () => {
                   <TableCell align="center" style={{borderTop: '2px solid #c0c0c0',borderRight: '2px solid #c0c0c0'}}>概要</TableCell>
                   <TableCell align="center" style={{borderTop: '2px solid #c0c0c0',borderRight: '2px solid #c0c0c0'}}>セリフ</TableCell>
                   <TableCell align="center" style={{borderTop: '2px solid #c0c0c0',borderRight: '2px solid #c0c0c0'}}>秒</TableCell>
-                  <TableCell align="center" style={{borderTop: '2px solid #c0c0c0',borderRight: '2px solid #c0c0c0'}}>生成</TableCell>
-                  <TableCell align="center" style={{borderTop: '2px solid #c0c0c0',borderRight: '2px solid #c0c0c0'}}>編集</TableCell>
+                  <TableCell align="center" style={{borderTop: '2px solid #c0c0c0',borderRight: '2px solid #c0c0c0'}}>AI生成</TableCell>
+                  <TableCell align="center" style={{borderTop: '2px solid #c0c0c0',borderRight: '2px solid #c0c0c0'}}>画像挿入</TableCell>
                   <TableCell align="center" style={{borderTop: '2px solid #c0c0c0',borderRight: '2px solid #c0c0c0'}}>削除</TableCell>
                 </TableRow>
               </TableHead>
@@ -357,7 +368,7 @@ const Ekonte_write = () => {
                     <TableCell align="right" style={{borderRight: '2px solid #c0c0c0',borderLeft: '2px solid #c0c0c0'}}>{row[0]}</TableCell>
                     <TableCell align="right" style={{borderRight: '2px solid #c0c0c0'}}>{row[1]}</TableCell>
                     <TableCell align="center" style={{borderRight: '2px solid #c0c0c0'}}>
-                    <img src="image0.png" alt="Test Image" style={{ width: '50px', height: '50px' }} />
+                    <img src={"/images/"+csvname+"/image" + row[0] +"_"+ row[1]+".png"} alt="Test Image" style={{ width: '320px', height: '160px' }} />
                     </TableCell>
                     <TableCell align="right" style={{borderRight: '2px solid #c0c0c0'}}>{row[2]}</TableCell>
                     <TableCell align="right" style={{borderRight: '2px solid #c0c0c0'}}>{row[3]}</TableCell>
@@ -365,8 +376,11 @@ const Ekonte_write = () => {
                     <TableCell align="right" style={{borderRight: '2px solid #c0c0c0'}}>{row[5]}</TableCell>
                     <TableCell align="right" style={{borderRight: '2px solid #c0c0c0'}}>{row[6]}</TableCell>
                     <TableCell align="center" style={{borderRight: '2px solid #c0c0c0'}}><Button variant="outlined">生成</Button></TableCell>
-                    <TableCell align="center" style={{borderRight: '2px solid #c0c0c0'}}><Button variant="outlined">編集</Button></TableCell>
-                    <TableCell align="center" style={{borderRight: '2px solid #c0c0c0'}}><Button variant="outlined">削除</Button></TableCell>
+                    <TableCell align="center" style={{borderRight: '2px solid #c0c0c0'}}>
+                      <Button variant="outlined" style={{margin:'2px'}}>画像を選択</Button><br/>
+                      <Button variant="outlined" style={{margin:'2px'}} onClick={() => handlePopupOpen()}>ペイントを開く</Button>
+                    </TableCell>
+                    <TableCell align="center" style={{borderRight: '2px solid #c0c0c0'}}><Button variant="outlined" onClick={() => handleDeleteRow(row)}>削除</Button></TableCell>
                   </TableRow>
                 ))}
               </TableBody>

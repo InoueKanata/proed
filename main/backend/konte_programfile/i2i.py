@@ -25,10 +25,5 @@ def create_background():
             num_inference_steps=50,  # 画像生成に費やすステップ数
             ).images[0]
     image.save(r"projectfile/test/imageSD.png")
-while(True):
-    print("入力")
-    a=input()
-    if(a=="a"):
-        {
-            create_background()
-        }
+if __name__ == '__main__':
+    create_background()
