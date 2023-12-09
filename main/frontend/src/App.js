@@ -1,5 +1,4 @@
 import React from 'react';
-import logo from './logo.svg';
 import './App.css';
 import {
   BrowserRouter as Router,
@@ -13,12 +12,12 @@ import {
   List,
   Typography,
   Divider,
-  ListItem,
   ListItemButton,
   ListItemIcon,
   ListItemText,
   ThemeProvider,
   Link,
+  Box,
 } from '@mui/material';
 
 import EditIcon from '@mui/icons-material/Edit';
@@ -30,19 +29,27 @@ import Ekonte from './routes/Ekonte';
 import Ekonte_Write from './routes/Ekonte_write';
 import Taboo from './routes/Taboo';
 import UserSettings from './routes/UserSetting';
+import TabooDownload from './routes/TabooDownload';
 
-function App() {
+const App = () => {
   return (
     <ThemeProvider theme={theme}>
     <div className="App">
       <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
         <Toolbar>
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            禁忌チェック
+            <Router>
+              <Routes>
+                <Route path="/" element ={<div>禁忌チェック</div>}/>
+                <Route path="/ekonte" element ={<div>絵・Vコンテ作成</div>}/>
+                <Route path="/TabooDownload" element ={<div>絵・Vコンテ作成</div>}/>
+                <Route path="/settings" element ={<div>設定</div>}/>
+              </Routes>
+            </Router>
           </Typography>
         </Toolbar>
       </AppBar>
-
+      <Box sx = {{display:'flex'}}>
       <Drawer
         sx={{
           width: 240,
@@ -50,6 +57,7 @@ function App() {
           '& .MuiDrawer-paper': {
             width: 240,
             boxSizing: 'border-box',
+            zIndex:(theme) => theme.zIndex.drawer
           },
         }}
         variant="permanent"
@@ -83,12 +91,14 @@ function App() {
           </ListItemButton>
         </List>
       </Drawer>
+      </Box>
       <Router>
         <Routes>
-          <Route path="/" element={<Taboo />} />
+          <Route path="/" element={<Taboo/>} />
           <Route path="/ekonte" element={<Ekonte/>} />
           <Route path="/ekonte_write" element={<Ekonte_Write />} />
           <Route path="/settings" element={<UserSettings />} />
+          <Route path="/TabooDownload" element={<TabooDownload/>} />
         </Routes>
       </Router>
     </div>

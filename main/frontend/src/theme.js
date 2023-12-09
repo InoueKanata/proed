@@ -11,7 +11,7 @@ const theme = createTheme({
       default: '#f8f8f8',
     },
     text: { 
-      primary: '#000000' 
+      primary: '#3775fa' 
     },
   },
   components:{

@@ -79,3 +79,12 @@ def main(file_path):
     }for item in result])
 
     return jsondata,file_contentes
+
+    jsondata = json.dumps([{
+        'id':item[0],
+        'taboo':item[1],
+        'summary':item[2],
+        'plan':item[3],
+    }for item in result])
+
+    return jsondata,file_contentes

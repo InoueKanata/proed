@@ -10,9 +10,8 @@ import re
 import pandas as pd
 import subprocess
 
-#↓間違ってるかも
-#POSTはWebからFlaskにデータを送る時に使う。（web側から観たら"送る"）
-#GETはFlaskからWebにデータを送るときに使う。（web側から観たら"受け取る"）
+#POSTはデータを送る時に使う。
+#GETはデータを送るときに使う。
 
 app = Flask(__name__)
 #jsonifyでjsonを送るときに日本語が文字化けしないようにするための設定
