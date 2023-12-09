@@ -137,7 +137,7 @@ def write_data_to_csv(file_name):
         data_list = list(data.values())
         print(file_path)#csvファイルへの相対パス
         print(data_list)#追加したいデータ。例）['4', '3', '4', '4', '44', '4', '4']
-        df = pd.read_csv(file_path, header=None)
+        df = pd.read_csv(file_path, header=None, encoding='shift-jis')
         for i in range(df.shape[0]):
             if(str(df.iloc[i,0])==str(data_list[0]) and str(df.iloc[i,1]) == str(data_list[1])):
                 df = df.drop(df.index[i:i+1])
