@@ -1,3 +1,7 @@
 bard_api_key,null
 stablediffusion_api_key,null
+<<<<<<< HEAD
 DEEPL_api_key,null
+=======
+DEEPL_api_key,null
+>>>>>>> 9a6c9030529f6b47903bc007c08a97465ecfe4be
