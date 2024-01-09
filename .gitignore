@@ -6,3 +6,17 @@ Beforeintegration/UI/kinki_programfile/model.vec
 Beforeintegration\UI\__pycache__
 venv
 main/backend/kinki_programfile/model.vec
+main/backend/konte_programfile/__pycache__
+main/backend/__pycache__
+main/backend/kinki_programfile/__pycache__
+main/backend/kinki_programfile/__pycache__/__init__.cpython-310.pyc
+main/backend/kinki_programfile/__pycache__/Bard.cpython-310.pyc
+/main/backend/konte_programfile/projectfile/**
+!/main/backend/konte_programfile/projectfile/**/
+!/main/backend/konte_programfile/projectfile/**/.gitkeep
+/main/backend/tmp/**
+!/main/backend/tmp/**/
+!/main/backend/tmp/**/.gitkeep
+/main/frontend/public/images/**
+!/main/frontend/public/images/**/
+!/main/frontend/public/images/**/.gitkeep
