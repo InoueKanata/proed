@@ -1,11 +1,14 @@
-from flask import Flask, send_file
-from flask import request,make_response,jsonify
+from flask import request, jsonify, Flask, send_file
 from flask_cors import CORS
-from kinki_programfile import bardai,kinkizisyo
+# from kinki_programfile import bardai,kinkizisyo
+from konte_programfile import i2i
 from werkzeug.utils import secure_filename
 import os
 import csv
-import json
+import base64
+import re
+import pandas as pd
+import subprocess
 
 #POSTはデータを送る時に使う。
 #GETはデータを送るときに使う。
@@ -68,50 +71,137 @@ def tabooCheck():
         f.write(result)
     return send_file(bard_text_path,as_attachment=True)
 
-# @app.route('/storyboardFile')
+@app.route('/get_files', methods=['GET'])
+def get_files():
+    folder_path = 'konte_programfile/projectfile'  # フォルダのパスを指定
+    files = [f for f in os.listdir(folder_path) if os.path.isfile(os.path.join(folder_path, f))]
+    return jsonify(files)
 
-# @app.route('/stroyboardCheck')
+@app.route('/create_csv', methods=['POST'])
+def create_csv():
+    try:
+        # リクエストからファイル名を取得
+        data = request.get_json()
+        filename = data.get('filename')
 
-@app.route('/setting',methods=['POST'])
-def settingPost():
-    def opencsv(number,token):
-        path = os.path.dirname(__file__)
-        with open(os.path.join(path,"tmp","setting.csv"),'r') as f:
-            reader = csv.reader(f)
-            readerlist = [i for i in reader]
-        if token == "":
-            token ="null"
-        if number == 0:
-            row = ["bard_api_key",token]
-            readerlist[0] = row
-        elif number == 1:
-            row = ["stablediffusion_api_key",token]
-            readerlist[1] = row
-        elif number == 2:
-            row = ["DEEPL_api_key",token]
-            readerlist[2] = row
-        with open(os.path.join(path,"tmp","setting.csv"),'w',newline='') as f:
-            writer = csv.writer(f)
-            writer.writerows(readerlist)
+        if not filename:
+            raise Exception('Filename not provided in the request.')
 
-    tokendict = request.json
-    if "bardToken" in tokendict:
-        opencsv(0, tokendict["bardToken"])
-    elif "sDToken" in tokendict:
-        opencsv(1, tokendict["sDToken"])
-    elif "deeplToken" in tokendict:
-        opencsv(2, tokendict["deeplToken"])
-    return "yes"
+        # CSVファイルを作成する
+        save_path = os.path.join('konte_programfile', 'projectfile', f"{filename}.csv")
+        save_path2 = os.path.abspath(os.path.join('..','frontend','public', 'images', f"{filename}"))
+        print(save_path2)
+        if not os.path.exists(save_path2):
+            os.mkdir(save_path2)
+        
+        with open(save_path, 'a', newline='') as csv_file:
+            writer = csv.writer(csv_file)
+        # 成功メッセージを返す
+        return jsonify({'message': f'CSV file ({filename}.csv) created successfully.'})
 
-@app.route('/setting',methods=['GET'])
-def settingGet():
-    path = os.path.dirname(__file__)
-    with open(os.path.join(path,"tmp","setting.csv")) as f:
-        reader = csv.reader(f)
-        readerlist = [i for i in reader]
-        json_data = json.dumps(readerlist)
-    return jsonify(json_data)
+    except Exception as e:
+        # エラーが発生した場合はエラーメッセージを返す
+        return jsonify({'error': str(e)})
 
+@app.route('/fetchCSVContent/<file_name>', methods=['GET'])
+def fetch_csv_content(file_name):
+    try:
+        folder_path = 'konte_programfile/projectfile'
+        file_path = os.path.join(folder_path, f"{file_name}.csv")
+
+        if not os.path.exists(file_path):
+            raise FileNotFoundError(f"CSV file '{file_name}.csv' not found.")
+
+        # 適切なエンコーディングを指定してファイルを開く
+        with open(file_path, 'r', encoding='utf-8') as csv_file:
+            reader = csv.reader(csv_file)
+            content = [row for row in reader]
+
+        return jsonify({'content': content})
+
+    except Exception as e:
+        return jsonify({'error': str(e)})
+    
+@app.route('/writeDataToCSV/<file_name>', methods=['POST'])
+def write_data_to_csv(file_name):
+    try:
+        # リクエストからデータを取得
+        data = request.get_json()
+        if not data:
+            raise Exception('Data not provided in the request.')
+        folder_path = '.\konte_programfile\projectfile'
+        file_path = os.path.join(folder_path, f"{file_name}.csv")
+        if not os.path.exists(file_path):
+            raise FileNotFoundError(f"CSV file '{file_name}.csv' not found.")
+        data_list = list(data.values())
+        print(file_path)#csvファイルへの相対パス
+        print(data_list)#追加したいデータ。例）['4', '3', '4', '4', '44', '4', '4']
+        df = pd.read_csv(file_path, header=None, encoding='utf-8')
+        for i in range(df.shape[0]):
+            if(str(df.iloc[i,0])==str(data_list[0]) and str(df.iloc[i,1]) == str(data_list[1])):
+                df = df.drop(df.index[i:i+1])
+                df.to_csv(file_path, header=False, index=False)  
+        with open(file_path, 'a', newline='', encoding='utf-8') as csv_file:
+            writer = csv.writer(csv_file)
+            # データをCSVファイルに書き込む
+            writer.writerow(data_list)
+
+        # 成功メッセージを返す
+        response_data = {'success': True}
+    except Exception as e:
+        response_data = {'error': str(e)}
+    return jsonify(response_data)
+
+
+@app.route('/deleteRowFromCSV/<file_name>', methods=['POST'])
+def delete_row_from_csv(file_name):
+    try:
+        # 受け取ったデータ
+        data = request.get_json()
+        scene = data.get('scene')
+        cut = data.get('cut')
+        folder_path = '.\konte_programfile\projectfile'
+        file_path = os.path.join(folder_path, f"{file_name}.csv")
+        print(file_path)
+        df = pd.read_csv(file_path, header=None)
+        for i in range(df.shape[0]):
+            if(str(df.iloc[i,0])==str(scene) and str(df.iloc[i,1]) == str(cut)):
+                df = df.drop(df.index[i:i+1])
+                df.to_csv(file_path, header=False, index=False)
+        response_data = {'success': True}
+    except Exception as e:
+        response_data = {'error': str(e)}
+
+    return jsonify(response_data)
+
+@app.route('/runI2I', methods=['POST'])
+def run_i2i():
+    try:
+        data = request.get_json()
+        scene = data.get('scene')
+        cut = data.get('cut')
+        people = data.get('people')
+        place = data.get('place')
+        overview = data.get('overview')
+        csvname = data.get('csv_name')
+        print(scene)
+        
+
+        # i2i.pyを実行
+        # command = ['python', './konte_programfile/i2i.py', '--scene', int(scene), '--cut', int(cut) , '--people', int(people) , '--place', str(place) , '--overview', str(overview),'--csvname', str(csvname)]
+        # subprocess.run(command, check=True)
+
+        return jsonify({'success': True})
+    except Exception as e:
+        return jsonify({'error': str(e), 'success': False})
+
+@app.route('/upload/<csv_name>/<file_name>', methods=['POST'])
+def upload_file(csv_name, file_name):
+    uploaded_file = request.files['file']
+    print("OK")
+    uploaded_file.save(f'main/frontend/public/images/{csv_name}/{file_name}')
+    uploaded_file.save(f'main/frontend/public/images/{csv_name}/AI{file_name}')
+    return {'message': 'ファイルが正常にアップロードされました'}
 
 if __name__ == '__main__':
     app.run(debug=True)
