@@ -1,6 +1,6 @@
 from flask import request, jsonify, Flask, send_file
 from flask_cors import CORS
-from kinki_programfile import bardai,kinkizisyo
+# from kinki_programfile import bardai,kinkizisyo
 from konte_programfile import i2i
 from werkzeug.utils import secure_filename
 import os
@@ -113,7 +113,7 @@ def fetch_csv_content(file_name):
             raise FileNotFoundError(f"CSV file '{file_name}.csv' not found.")
 
         # 適切なエンコーディングを指定してファイルを開く
-        with open(file_path, 'r', encoding='shift-jis') as csv_file:
+        with open(file_path, 'r', encoding='utf-8') as csv_file:
             reader = csv.reader(csv_file)
             content = [row for row in reader]
 
@@ -136,12 +136,12 @@ def write_data_to_csv(file_name):
         data_list = list(data.values())
         print(file_path)#csvファイルへの相対パス
         print(data_list)#追加したいデータ。例）['4', '3', '4', '4', '44', '4', '4']
-        df = pd.read_csv(file_path, header=None, encoding='shift-jis')
+        df = pd.read_csv(file_path, header=None, encoding='utf-8')
         for i in range(df.shape[0]):
             if(str(df.iloc[i,0])==str(data_list[0]) and str(df.iloc[i,1]) == str(data_list[1])):
                 df = df.drop(df.index[i:i+1])
                 df.to_csv(file_path, header=False, index=False)  
-        with open(file_path, 'a', newline='', encoding='shift-jis') as csv_file:
+        with open(file_path, 'a', newline='', encoding='utf-8') as csv_file:
             writer = csv.writer(csv_file)
             # データをCSVファイルに書き込む
             writer.writerow(data_list)
@@ -152,36 +152,6 @@ def write_data_to_csv(file_name):
         response_data = {'error': str(e)}
     return jsonify(response_data)
 
-@app.route('/saveImage/<file_name>', methods=['POST'])# 未完成
-def save_image(file_name):
-    try:
-        data = request.get_json()
-        dataURL = data.get('url')
-        scene = data.get('scene')
-        cut = data.get('cut')
-        print(scene)
-        print(cut)
-
-        if not dataURL:
-            raise Exception('DataURL not provided in the request.')
-        
-        # DataURLから画像データを抽出
-        image_data = re.sub('^data:image/.+;base64,', '', dataURL)
-        binary_data = base64.b64decode(image_data)
-
-        # 画像を保存するパス
-        save_directory = '../frontend/public/images'
-        number = 'image'+scene+'_'+cut
-        save_path = os.path.join(save_directory, file_name,f"{number}.png")
-        print(save_path)
-        # 画像を保存
-        with open(save_path, 'wb') as file:
-            file.write(binary_data)
-
-        return jsonify({'success': True})
-    except Exception as e:
-        return jsonify({'error': str(e), 'success': False})
-    
 
 @app.route('/deleteRowFromCSV/<file_name>', methods=['POST'])
 def delete_row_from_csv(file_name):
@@ -192,12 +162,12 @@ def delete_row_from_csv(file_name):
         cut = data.get('cut')
         folder_path = '.\konte_programfile\projectfile'
         file_path = os.path.join(folder_path, f"{file_name}.csv")
+        print(file_path)
         df = pd.read_csv(file_path, header=None)
         for i in range(df.shape[0]):
             if(str(df.iloc[i,0])==str(scene) and str(df.iloc[i,1]) == str(cut)):
                 df = df.drop(df.index[i:i+1])
                 df.to_csv(file_path, header=False, index=False)
-
         response_data = {'success': True}
     except Exception as e:
         response_data = {'error': str(e)}
@@ -224,6 +194,14 @@ def run_i2i():
         return jsonify({'success': True})
     except Exception as e:
         return jsonify({'error': str(e), 'success': False})
+
+@app.route('/upload/<csv_name>/<file_name>', methods=['POST'])
+def upload_file(csv_name, file_name):
+    uploaded_file = request.files['file']
+    print("OK")
+    uploaded_file.save(f'main/frontend/public/images/{csv_name}/{file_name}')
+    uploaded_file.save(f'main/frontend/public/images/{csv_name}/AI{file_name}')
+    return {'message': 'ファイルが正常にアップロードされました'}
 
 if __name__ == '__main__':
     app.run(debug=True)

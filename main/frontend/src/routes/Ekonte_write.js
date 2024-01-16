@@ -1,8 +1,7 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { Button,ThemeProvider,TextField,Box,Table,TableBody,TableCell,TableContainer,TableHead,TableRow,Paper,Container } from '@mui/material';
+import { Button,ThemeProvider,TextField,Box,Table,TableBody,TableCell,TableContainer,TableHead,TableRow,Paper,Container,Input } from '@mui/material';
 import theme from '../theme';
-//import { useHistory } from 'react-router-dom';
-//↑最期まで使用しなかった場合削除。アンドゥの機能用
+import axios from 'axios';
 const Ekonte_write = () => {
   let csvname;
   const popupRef = useRef(null);
@@ -16,6 +15,7 @@ const Ekonte_write = () => {
   const [lineWidth, setLineWidth] = useState(2);
   const [csvContent, setCsvContent] = useState([]);
   const [number, setNumber] = useState('');
+  const [selectedFile, setSelectedFile] = useState(null);
   const handleSceneNumberChange = (event) => {
     const sanitizedValue = event.target.value.replace(/[^0-9]/g, '');
     setNumber(sanitizedValue);
@@ -76,15 +76,118 @@ const Ekonte_write = () => {
   };
   const handleSaveToFolder = async (row) => {
   const dataURL = getCanvasDataURL();
+  const byteString = atob(dataURL.split(',')[1]);
+  const mimeString = dataURL.split(',')[0].split(':')[1].split(';')[0];
+  const ab = new ArrayBuffer(byteString.length);
+  const ia = new Uint8Array(ab);
+  for (let i = 0; i < byteString.length; i++) {
+    ia[i] = byteString.charCodeAt(i);
+  }
+  const blob = new Blob([ab], { type: mimeString });
+  const file = new File([blob], 'saved_image.png', { type: 'image/png' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(file);
+  a.download = file.name;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+};
+
+const handleCanvasMouseDown = (e) => {
+  setDrawing(true);
+  setPrevPosition({ x: e.nativeEvent.offsetX, y: e.nativeEvent.offsetY });
+};
+
+const handleCanvasMouseMove = (e) => {
+  if (!drawing) return;
+
+  const canvas = canvasRef.current;
+  const ctx = context;
+
+  const currentPosition = { x: e.nativeEvent.offsetX, y: e.nativeEvent.offsetY };
+
+  ctx.lineJoin = 'round'; // 線の接続部分を丸くする
+  ctx.lineCap = 'round'; // 線の先端を丸くする
+  ctx.strokeStyle = lineColor; // 現在の線の色を設定
+  ctx.lineWidth = lineWidth; // 線の太さを設定
+  ctx.beginPath();
+  ctx.moveTo(prevPosition.x, prevPosition.y);
+  ctx.lineTo(currentPosition.x, currentPosition.y);
+  ctx.strokeStyle = lineColor; // 現在の線の色を設定
+  ctx.stroke();
+  ctx.closePath();
+
+  setPrevPosition(currentPosition);
+};
+
+const handleCanvasMouseUp = () => {
+  setDrawing(false);
+  setLineColors([...lineColors, lineColor]); // 描画が終わったら線の色を保存
+};
+
+const handleReset = () => {
+  const canvas = canvasRef.current;
+  const ctx = context;
+
+    // 描画をリセット
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = 'white';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  setLineColors([]);
+};
+
+const handlePopupOpen = () => {
+  const popup = popupRef.current;
+  popup.style.display = 'block';
+};
+
+const handlePopupClose = () => {
+  const popup = popupRef.current;
+  popup.style.display = 'none';
+};
+
+const handleColorChange = (newColor) => {
+  setLineColor(newColor);
+};
+
+const handleLineWidthChange = (newWidth) => {
+    setLineWidth(newWidth);
+  if (context) {
+    context.lineWidth = newWidth;
+  }
+}
+const handleAddDataToCSV = async () => {
+  console.log(csvname)
   try {
-    // リクエストを送信
-    const response = await fetch(`http://localhost:5000/saveImage/${csvname}`, {
+    // 入力されたデータを取得
+    const scene = document.getElementById('scene').value;
+    const cut = document.getElementById('cut').value;
+    const people = document.getElementById('people').value;
+    const place = document.getElementById('place').value;
+    const overview = document.getElementById('overview').value;
+    const lines = document.getElementById('lines').value;
+    const seconds = document.getElementById('seconds').value;
+
+    // リクエストのデータを作成
+    const requestData = {
+      scene: scene,
+      cut: cut,
+      people: people,
+      place: place,
+      overview: overview,
+      lines: lines,
+      seconds: seconds
+    };
+
+      // リクエストを送信
+    const response = await fetch(`http://localhost:5000/writeDataToCSV/${csvname}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(),
+      body: JSON.stringify(requestData),
     });
+
     const data = await response.json();
     if (data.error) {
       console.error(data.error);
@@ -97,140 +200,52 @@ const Ekonte_write = () => {
   setTriggerEffect(true);
 };
 
-  const handleCanvasMouseDown = (e) => {
-    setDrawing(true);
-    setPrevPosition({ x: e.nativeEvent.offsetX, y: e.nativeEvent.offsetY });
-  };
-
-  const handleCanvasMouseMove = (e) => {
-    if (!drawing) return;
-
-    const canvas = canvasRef.current;
-    const ctx = context;
-
-    const currentPosition = { x: e.nativeEvent.offsetX, y: e.nativeEvent.offsetY };
-
-    ctx.lineJoin = 'round'; // 線の接続部分を丸くする
-    ctx.lineCap = 'round'; // 線の先端を丸くする
-    ctx.strokeStyle = lineColor; // 現在の線の色を設定
-    ctx.lineWidth = lineWidth; // 線の太さを設定
-
-    ctx.beginPath();
-    ctx.moveTo(prevPosition.x, prevPosition.y);
-    ctx.lineTo(currentPosition.x, currentPosition.y);
-    ctx.strokeStyle = lineColor; // 現在の線の色を設定
-    ctx.stroke();
-    ctx.closePath();
-
-    setPrevPosition(currentPosition);
-  };
-
-  const handleCanvasMouseUp = () => {
-    setDrawing(false);
-    setLineColors([...lineColors, lineColor]); // 描画が終わったら線の色を保存
-  };
-
-  const handleReset = () => {
-    const canvas = canvasRef.current;
-    const ctx = context;
-
-    // 描画をリセット
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = 'white';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    setLineColors([]);
-  };
-
-  const handlePopupOpen = () => {
-    const popup = popupRef.current;
-    popup.style.display = 'block';
-  };
-
-  const handlePopupClose = () => {
-    const popup = popupRef.current;
-    popup.style.display = 'none';
-  };
-
-  const handleColorChange = (newColor) => {
-    setLineColor(newColor);
-  };
-
-  const handleLineWidthChange = (newWidth) => {
-    setLineWidth(newWidth);
-    if (context) {
-      context.lineWidth = newWidth;
+const handleDeleteRow = async (row) => {
+  try {
+    const requestData = {
+      scene: row[0],
+      cut: row[1],
+    };
+    // リクエストを送信
+    const response = await fetch(`http://localhost:5000/deleteRowFromCSV/${csvname}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+    },
+      body: JSON.stringify(requestData),
+    });
+    const data = await response.json();
+    if (data.error) {
+      console.error(data.error);
+    } else {
+      setTriggerEffect(true);
     }
+  } catch (error) {
+    console.error(error);
   }
-  const handleAddDataToCSV = async () => {
-    console.log(csvname)
-    try {
-      // 入力されたデータを取得
-      const scene = document.getElementById('scene').value;
-      const cut = document.getElementById('cut').value;
-      const people = document.getElementById('people').value;
-      const place = document.getElementById('place').value;
-      const overview = document.getElementById('overview').value;
-      const lines = document.getElementById('lines').value;
-      const seconds = document.getElementById('seconds').value;
-
-      // リクエストのデータを作成
-      const requestData = {
-        scene: scene,
-        cut: cut,
-        people: people,
-        place: place,
-        overview: overview,
-        lines: lines,
-        seconds: seconds
-      };
-
-      // リクエストを送信
-      const response = await fetch(`http://localhost:5000/writeDataToCSV/${csvname}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(requestData),
-      });
-
-      const data = await response.json();
-      if (data.error) {
-        console.error(data.error);
-      } else {
-        setTriggerEffect(true);
-      }
-    } catch (error) {
-      console.error(error);
-    }
-    setTriggerEffect(true);
-  };
-
-  const handleDeleteRow = async (row) => {
-    try {
-      const requestData = {
-        scene: row[0],
-        cut: row[1],
-      };
-      // リクエストを送信
-      const response = await fetch(`http://localhost:5000/deleteRowFromCSV/${csvname}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(requestData),
-      });
-      const data = await response.json();
-      if (data.error) {
-        console.error(data.error);
-      } else {
-        setTriggerEffect(true);
-      }
-    } catch (error) {
-      console.error(error);
-    }
-    setTriggerEffect(true);
-  };
-
+  setTriggerEffect(true);
+};
+const handleFileSelect = (cut,scene) => (event) => {
+  // リクエストは、/main/frontend/public/images/の後に続くpassで行う。例）test1/image1_1
+  const file = event.target.files[0];
+  if (file && file.type.startsWith('image/')) {
+    setSelectedFile(file);
+    console.log(scene);
+    console.log(cut);
+    const formData = new FormData();
+    formData.append('file', file);
+    const URLs = 'http://localhost:5000/upload/'+csvname+'/image'+cut+'_'+scene;
+    axios.post(URLs, formData)
+    .then(response => {
+      console.log(response.data);
+    })
+    .catch(error => {
+      console.error('ファイルのアップロードエラー:', error);
+    });
+  } else {
+    alert('画像ファイルを選択してください。');
+  }
+};
   return (
     <div>
       <h2>絵・Vコンテ作成</h2>
@@ -343,6 +358,7 @@ const Ekonte_write = () => {
           <TextField id="seconds" label="秒"  sx={{ width: '10ch' }} size="small"/>
         <br/>
         <Button disabled={!scenetxt || !cuttxt} variant="outlined" style={{margin:'10px'}}onClick={handleAddDataToCSV}>追加・上書き</Button>
+        <Button variant="outlined" style={{margin:'2px'}} onClick={() => handlePopupOpen()}>ペイントを開く</Button>
         </Container>
         <Container Container maxWidth="xl" component={Paper} sx={{marginTop:5}}>
           <TableContainer component={Paper} style={{ marginLeft: '0px', marginRight: '260px',width: '100%', overflowX: 'auto'}}>
@@ -377,8 +393,22 @@ const Ekonte_write = () => {
                     <TableCell align="right" style={{borderRight: '2px solid #c0c0c0'}}>{row[6]}</TableCell>
                     <TableCell align="center" style={{borderRight: '2px solid #c0c0c0'}}><Button variant="outlined">生成</Button></TableCell>
                     <TableCell align="center" style={{borderRight: '2px solid #c0c0c0'}}>
-                      <Button variant="outlined" style={{margin:'2px'}}>画像を選択</Button><br/>
-                      <Button variant="outlined" style={{margin:'2px'}} onClick={() => handlePopupOpen()}>ペイントを開く</Button>
+                    <label htmlFor="fileInput">
+                    <Input
+                      type="file"
+                      id="fileInput"
+                      inputProps={{ accept: 'image/*' }}
+                      onChange={(e) => handleFileSelect(row[0], row[1], e)}
+                      style={{ display: 'none' }}
+                    />
+                    <Button
+                      variant="outlined"
+                      component="span"
+                      style={{ margin: '2px' }}
+                    >
+                      ファイルを選択
+                    </Button>
+                    </label>
                     </TableCell>
                     <TableCell align="center" style={{borderRight: '2px solid #c0c0c0'}}><Button variant="outlined" onClick={() => handleDeleteRow(row)}>削除</Button></TableCell>
                   </TableRow>
