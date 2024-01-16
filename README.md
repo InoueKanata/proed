@@ -19,6 +19,8 @@ cd backned<br>
 server.py を実行<br>
 ### ・Before integration<br>
 各自が作成した機能（プログラム）を入れていくフォルダです。<br>
+以下のプログラムは東京ゲームショウ用に作成した、Tkinterを用いたタイプです。<br>
+proed\Beforeintegration\UI\gui.py<br>
 ### ・main<br>
 最終成果物を保存するフォルダです。<br>
 ## ライブラリのインストールについて<br>
