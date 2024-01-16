@@ -8,7 +8,15 @@
 ## ファイルおよびフォルダについて<br>
 ### ・現在の作業フォルダについて(2023年10月19日更新)<br>
 現在以下のフォルダで主に作業しています。<br>
-main<br>
+main<br><br>
+アプリケーション実行手順<br>
+cd frontendファイル<br>
+npm start（フロントエンドサーバーが起動＋UI表示）<br>
+(VSCodeに移動)<br>
+ターミナル起動<br>
+仮想環境に入る（開発中の仮想環境名前はvenv）<br>
+cd backned<br>
+server.py を実行<br>
 ### ・Before integration<br>
 各自が作成した機能（プログラム）を入れていくフォルダです。<br>
 ### ・main<br>
