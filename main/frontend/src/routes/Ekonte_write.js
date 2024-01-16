@@ -225,7 +225,7 @@ const handleDeleteRow = async (row) => {
   }
   setTriggerEffect(true);
 };
-const handleFileSelect = (cut,scene) => (event) => {
+const handleFileSelect = (event,cut,scene) => {
   // リクエストは、/main/frontend/public/images/の後に続くpassで行う。例）test1/image1_1
   const file = event.target.files[0];
   if (file && file.type.startsWith('image/')) {
@@ -235,6 +235,7 @@ const handleFileSelect = (cut,scene) => (event) => {
     const formData = new FormData();
     formData.append('file', file);
     const URLs = 'http://localhost:5000/upload/'+csvname+'/image'+cut+'_'+scene;
+    console.log(URLs)
     axios.post(URLs, formData)
     .then(response => {
       console.log(response.data);
@@ -398,7 +399,7 @@ const handleFileSelect = (cut,scene) => (event) => {
                       type="file"
                       id="fileInput"
                       inputProps={{ accept: 'image/*' }}
-                      onChange={(e) => handleFileSelect(row[0], row[1], e)}
+                      onChange={(e) => handleFileSelect(e, row)}
                       style={{ display: 'none' }}
                     />
                     <Button
@@ -417,6 +418,13 @@ const handleFileSelect = (cut,scene) => (event) => {
             </Table>
           </TableContainer>
           </Container>
+          <Button
+            variant="outlined"
+            component="span"
+            style={{ margin: '50px' }}
+            >
+            絵コンテ・Vコンテ生成
+          </Button>
         </Box>
       </ThemeProvider>
     </div>
