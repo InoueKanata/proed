@@ -1,6 +1,6 @@
 from flask import request, jsonify, Flask, send_file
 from flask_cors import CORS
-# from kinki_programfile import bardai,kinkizisyo
+from kinki_programfile import bardai,kinkizisyo
 from konte_programfile import i2i
 from werkzeug.utils import secure_filename
 import os
